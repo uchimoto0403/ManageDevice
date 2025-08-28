@@ -94,6 +94,8 @@ def home_customer(request, intUsr ):
 def home_admin(request, intUsr):
     
     try:
+        objuser = None
+        
         #不正アクセスが起きた場合
         objuser = UserMst.objects.filter( id = intUsr )          
         if objuser is None  :

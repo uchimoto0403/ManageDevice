@@ -40,9 +40,8 @@ def login( request ):
                 ):
                     
                     blnerror    = True  
-                    insform     = LoginForm()
 
-                    # 更新用パラメータ作成 
+                    # パラメータ更新
                     params['RequiredError'] = blnerror
 
                     return render( request, 'login.html', params )
@@ -57,7 +56,7 @@ def login( request ):
                 if objuser is None :
                     blnerror    = True  
 
-                    # 更新用パラメータ作成 
+                    # パラメータ更新
                     params['RequiredError'] = blnerror
 
                     return render( request, 'login.html', params )
