@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang = "ja">
+
+<head>
+  <meta charset = "utf-8">
+  <title>
+      {% block title %}機器構成管理システム{% endblock %}
+  </title>
+
+  <link href = "https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel = "stylesheet" 
+        integrity = "sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin = "anonymous">
+</head>
+
+<body>
+    <header>
+        <div align = "center" style = "background-color:#00102E;">
+            <img src = 'https://view-s.co.jp/web/wp-content/uploads/2020/01/CompanyLogo3.png'>
+        </div>
+    </header>
+
+    <br>
+    <div class = "container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer>
+        <div align = "center" style = "background-color:#BC3257">
+            <br>
+            <font color="white">Copyright © 2025 NIPPON VIEW SYSTEM CO.,LTD All Rights Reserved.</font>
+            <br>
+            <br>
+        </div>
+    </footer>
+</body>
+
+</html>

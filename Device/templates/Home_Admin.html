@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
+      rel="stylesheet" 
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+      crossorigin="anonymous">
+
+<div class="d-flex align-items-center justify-content-center ">
+  <form action="{% url 'home_admin' intUsr=User.id %}" method="post"  style="min-width: 400px;">
+    {% csrf_token %}
+    
+    <div class="fs-4 text-center mb-4">
+      <h1>ホーム</h1>
+    </div>
+
+    <div class="d-flex flex-column align-items-center gap-5 m-3">
+        <button class="btn btn-primary w-100" type="submit" name="btnCustomer">顧客管理</button>
+        <button class="btn btn-primary w-100" type="submit" name="btnDevice">機器管理</button>
+        <button class="btn btn-primary w-100" type="submit" name="btnAdmin">管理者管理</button>
+        <button class="btn btn-danger w-100" type="submit" name="btnLogout">ログアウト</button>
+    </div>
+    
+  </form>
+</div>
+<br>    
+<br>
+<br>
+<br>
+<br>
+{% endblock %}
