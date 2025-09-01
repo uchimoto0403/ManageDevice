@@ -4,9 +4,17 @@ from Device.models import UserMst ,DeviceMst, DeviceSoftMst
 import logging
 #------------------------------------------------------------------------------------------------#
 
+  
+
+# 機器管理
+# 引　数：リクエスト　ユーザーID 機器ID
+# 戻り値：なし
+
+# def manage_device(request, intUsr ):
+
 # 詳細
 # 引　数：リクエスト　ユーザーID　機器ID
-# 戻り値：なし  
+# 戻り値：なし
 
 def detail_device(request, intUsr, intDevice ):
     try:

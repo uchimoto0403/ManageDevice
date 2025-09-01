@@ -8,14 +8,14 @@ from django import forms
 class AdminForm( forms.Form ):
 
     #管理者名
-    chrAdminName = forms.CharField(
+    chrName = forms.CharField(
         label = '管理者名',
         max_length = 15,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
                 'style': 'width:80% ',
-                'placeholder': '管理者名を入力して下さい' } ),
+                'placeholder': '名前を入力して下さい' } ),
         required = True )
     
     #ログインID
@@ -43,7 +43,7 @@ class AdminForm( forms.Form ):
         required = True )
     
     #メールアドレス
-    chrMailAddress = forms.CharField(
+    chrMail = forms.CharField(
         label = 'メールアドレス',
         max_length = 30,
         widget = forms.EmailInput(

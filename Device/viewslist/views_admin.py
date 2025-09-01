@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.views.generic import Listview 
 from Device.formslist.forms_admin import AdminForm
 from Device.models import UserMst
 import logging
@@ -97,14 +98,12 @@ def manage_admin(request, intUsr ):
                     return redirect( strurl )
                 
                 # ログアウトボタン押下時
-                if 'btnLogout' in request.POST:
-    
+                elif 'btnLogout' in request.POST:
+
                     # ログイン画面に移行
                     strurl = reverse( 'login' )
                     return redirect( strurl )
-                
-            
-                
+    
     except:
         # トレース設定
         import traceback
@@ -113,3 +112,5 @@ def manage_admin(request, intUsr ):
         logger = logging.getLogger(__name__)
         logger.error( request )
         logger.error( traceback.format_exc() )
+
+    return render(request, 'Manage_Admin.html', params)

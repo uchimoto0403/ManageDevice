@@ -14,13 +14,25 @@ class DeviceForm( forms.Form ):
                 'class': 'form-control',
                 'style': 'width:80% ',
                 'placeholder': '機器名は入力必須です' } ),
-        required = False )
+        required = True )
     
-
+    DEVICE_KIND_CHOICES = [
+        ('desktop', 'デスクトップPC'),
+        ('laptop', 'ノートPC'),
+        ('printer', 'プリンター'),
+        ('server', 'サーバー'),
+        ('network', 'ネットワーク機器'),
+    ]
 #種類
-    chrDeviceKind = forms.CharField(
+    chrDeviceKind = forms.ChoiceField(
         label = '種類',
-        max_length = 15)
+        choices=DEVICE_KIND_CHOICES,
+        widget=forms.Select(
+            attrs={
+                'class': 'form-control',
+                'style': 'width:80%',
+            }
+        ))
     
 #メーカー
     chrDeviceMaker = forms.CharField(  
