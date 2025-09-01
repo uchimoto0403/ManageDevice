@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.views.generic import Listview 
+#from django.views.generic import Listview 
 from Device.formslist.forms_admin import AdminForm
 from Device.models import UserMst
 import logging
