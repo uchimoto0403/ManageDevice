@@ -13,19 +13,23 @@ def home_customer(request, intUsr ):
     try:
          
         #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter( id = intUsr )          
+        objuser = UserMst.objects.filter( id = intUsr ).first()          
         if objuser is None  :
             
             # ログイン画面に移行
             request.session.flush()
-            return redirect( 'login' )
+            strurl = reverse( 'login' )
+            return redirect( strurl )
         
         # 引数で渡すものを指定
-        insuser = UserMst.objects.get( id = intUsr )   # ユーザー情報
+        insuser = UserMst.objects.filter( id = intUsr ).first()  
+
+        devices = DeviceMst.objects.filter( dvcCustomer = insuser )  
 
         # 共通パラメータ定義
         params = {
-            'User'          : insuser,          
+            'User'          : insuser,
+            'devices'       : devices,                    
             }
          
         # GET時処理
@@ -46,19 +50,21 @@ def home_customer(request, intUsr ):
             
             # 出力ボタン押下時
             elif 'btnOutput' in request.POST:
-                # Excelファイル作成
-                wb = Workbook()
-                ws = wb.active
-                ws.title = "機器一覧"
 
-                # ユーザーの顧客に関連する機器を取得
+                # Excelファイル作成
+                wb = Workbook("機器一覧出力.xlsx")
+                ws = wb["Sheet1"]
+ 
+                # 登録されている機器情報取得
                 devices = DeviceMst.objects.filter(dvcCustomer=insuser.usrCustomer)
 
                 # データ行の追加
                 for device in devices:
                     row = [device.dvcName, device.dvcKind, device.dvcMaker, device.dvcPurchase,\
-                            device.dvcWarranty, device.dvcUser, device.dvcPlace, device.dvcSoft]
+                            device.dvcWarranty, device.dvcUser, device.dvcPlace]
                     ws.append(row)
+                
+                
 
                 # HttpResponseを使用してExcelファイルを返す
                 from django.http import HttpResponse       
@@ -71,7 +77,11 @@ def home_customer(request, intUsr ):
             elif 'btnLogout' in request.POST:
 
                 # ログイン画面に移行
-                return redirect( 'login' )
+                strurl = reverse( 'login' )
+                return redirect( strurl )
+            
+        return render(request, 'Home_Customer.html', params)
+
 
     except:
         # トレース設定
@@ -82,9 +92,7 @@ def home_customer(request, intUsr ):
         logger.error( request )
         logger.error( traceback.format_exc() )
 
-        # ログイン画面に移行
-        strurl = reverse( 'login' )
-        return redirect( strurl )
+    return render(request, 'Home_customer.html', params) 
 
 
 #ホーム_管理者
@@ -146,7 +154,10 @@ def home_admin(request, intUsr):
             elif 'btnLogout' in request.POST:
 
                 # ログイン画面に移行
-                return redirect( 'login' )   
+                strurl = reverse( 'login' )
+                return redirect( strurl )
+
+        return render(request, 'Home_Admin.html', params)     
          
     except:
         # トレース設定
@@ -157,9 +168,7 @@ def home_admin(request, intUsr):
         logger.error( request )
         logger.error( traceback.format_exc() )
 
-        # ログイン画面に移行
-        strurl = reverse( 'login' )
-        return redirect( strurl )
+    return render(request, 'Home_Admin.html', params) 
 
 
     

@@ -1,0 +1,92 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
+      rel="stylesheet" 
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+      crossorigin="anonymous">
+
+<div class="d-flex align-items-center justify-content-center ">
+  <form action="{% url 'detail_Device' intUsr=User.id intDvc=Dvc.id %}" method="post"  style="min-width: 400px;">
+    {% csrf_token %}
+    
+    <div class="fs-4 text-center mb-4">
+      <h1>詳細</h1>
+    </div>
+
+  {% if not softwares %}
+    <div class="alert alert-danger text-center">
+      ソフトが登録されていません
+    </div>
+  {% endif %}
+
+<div class="mb-3">
+    <label class="fw-bold">機器名：</label>
+    <div>{{ device.dvcName|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">媒体：</label>
+    <div>{{ device.dvcKind|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">メーカー：</label>
+    <div>{{ device.dvcMaker|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">型番：</label>
+    <div>{{ device.dvcModel|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">購入日：</label>
+    <div>{{ device.dvcPurchase|date:"Y-m-d"|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">保証期限：</label>
+    <div>{{ device.dvcWarranty|date:"Y-m-d"|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">使用者：</label>
+    <div>{{ device.dvcUser|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">設置場所：</label>
+    <div>{{ device.dvcPlace|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">備考欄：</label>
+    <div style="white-space: pre-wrap;">{{ device.dvcNotes|default:"未登録" }}</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="fw-bold">ソフト：</label>
+    {% if softwares %}
+      <ul class="list-group">
+        {% for soft in softwares %}
+          <li class="list-group-item">
+            {{ soft.dvsSoftName }}（保証期限: {{ soft.dvsWarranty|date:"Y-m-d" }})
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="text-danger">ソフトが登録されていません</div>
+    {% endif %}
+  </div>
+    <button class="btn btn-danger w-100" type="submit" name="btnBack">戻る</button>
+
+    <button class="btn btn-danger w-100" type="submit" name="btnLogout">ログアウト</button>
+  </form>
+</div>
+<br>    
+<br>
+<br>
+<br>
+<br>
+{% endblock %}

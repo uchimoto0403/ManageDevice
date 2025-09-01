@@ -78,6 +78,10 @@ def login( request ):
                         strurl = reverse( 'home_admin', kwargs = { 'intUsr'  : objuser.id } )
                         return redirect( strurl )
                     
+                return render(request, 'login.html', params)
+            
+            return render(request, 'login.html', params)
+                    
     except:
         # トレース設定
         import traceback

@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
+      rel="stylesheet" 
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+      crossorigin="anonymous">
+
+<div class="d-flex align-items-center justify-content-center ">
+  <form action="{% url 'manage_admin' intUsr=User.id %}" method="post"  style="min-width: 400px;">
+    {% csrf_token %}
+    
+    <div class="fs-4 text-center mb-4">
+      <h1>顧客管理</h1>
+    </div>
+
+    <div class="d-flex flex-column align-items-center gap-5 m-3">
+
+    <div class="row mb-3">
+      <label class="col-4 col-form-label text-end">顧客名：</label>
+      <div class="col-8">
+        {{ Form.chrName }}
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label class="col-4 col-form-label text-end">ログインID：</label>
+      <div class="col-8">
+        {{ Form.chrLoginID }}
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label class="col-4 col-form-label text-end">パスワード：</label>
+      <div class="col-8">
+        {{ Form.chrPassWord }}
+      </div>
+    </div>
+
+
+    <div class="row mb-3">
+      <label class="col-4 col-form-label text-end">機器配置図：</label>
+      <div class="col-8">
+       <!-- {{ Form.chrPassWord }}-->
+      </div>
+    </div>
+
+    <button class="btn btn-primary w-100" type="submit" name="btnCreate">登録</button>
+
+
+    
+
+    <button class="btn btn-danger w-100" type="submit" name="btnBack">戻る</button>
+
+    <button class="btn btn-danger w-100" type="submit" name="btnLogout">ログアウト</button>
+
+    
+  </form>
+</div>
+<br>    
+<br>
+<br>
+<br>
+<br>
+{% endblock %}

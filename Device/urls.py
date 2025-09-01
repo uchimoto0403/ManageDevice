@@ -1,5 +1,5 @@
 from django.urls import path
-from Device.viewslist import views_login, views_home
+from Device.viewslist import views_device, views_login, views_home
 urlpatterns = [
     #--- 申請一覧 ---#
     path('', views_login.login, name='login'),
@@ -7,6 +7,10 @@ urlpatterns = [
     path('home_admin/<int:intUsr>/', views_home.home_admin, name='home_admin'),
     
     path('home_customer/<int:intUsr>', views_home.home_customer, name='home_customer'),
+
+    path('detail_device/<int:intUsr>/<int:intDevice>/', views_device.detail_device, name='detail_device'),
+
+    path('admin_manage/<int:intUsr>/', views_admin.admin_manage, name='manage_admin'),
 
  
 
