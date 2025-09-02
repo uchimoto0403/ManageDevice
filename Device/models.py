@@ -93,7 +93,7 @@ class DeviceSoftMst(models.Model):
     #----------------------外部キー----------------------#
 
     #機器ID
-    dvsDeviceID         = models.ForeignKey( 'deviceMst', 
+    dvsDeviceID         = models.ForeignKey( 'DeviceMst', 
                                                 on_delete = models.CASCADE,
                                                 related_name = 'dvs_dvc_id'
                                                 )   

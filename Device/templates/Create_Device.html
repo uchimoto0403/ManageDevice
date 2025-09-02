@@ -1,0 +1,112 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
+      rel="stylesheet" 
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+      crossorigin="anonymous">
+
+<div class="d-flex align-items-center justify-content-center">
+  <form action="{% url 'create_device ' intUsr=User.id %}" method="post" style="max-width: 900px; width: 100%;">
+    {% csrf_token %}
+    
+    <!-- タイトル -->
+    <div class="fs-4 text-center mb-4">
+      <h1>機器登録</h1>
+    </div>
+
+    <!-- エラーメッセージ -->
+    {% if messages %}
+      <div class="alert alert-danger text-center">
+        {% for message in messages %}
+          <div>{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="container">
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">機器名：</label>
+        <div class="col-4">{{ Form.dvcName }}</div>
+        <label class="col-2 col-form-label text-end">使用年数：</label>
+        <div class="col-4">{{ Form.dvcYears }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">種類：</label>
+        <div class="col-4">{{ Form.dvcKind }}</div>
+        <label class="col-2 col-form-label text-end">シリアル番号：</label>
+        <div class="col-4">{{ Form.dvcSerial }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">型番：</label>
+        <div class="col-4">{{ Form.dvcModel }}</div>
+        <label class="col-2 col-form-label text-end">OS：</label>
+        <div class="col-4">{{ Form.dvcOS }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">メーカー：</label>
+        <div class="col-4">{{ Form.dvcMaker }}</div>
+        <label class="col-2 col-form-label text-end">CPU：</label>
+        <div class="col-4">{{ Form.dvcCPU }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">購入日：</label>
+        <div class="col-4">{{ Form.dvcPurchase }}</div>
+        <label class="col-2 col-form-label text-end">RAM：</label>
+        <div class="col-4">{{ Form.dvcRAM }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">保証：</label>
+        <div class="col-4">{{ Form.dvcWarranty }}</div>
+        <label class="col-2 col-form-label text-end">グラフィック：</label>
+        <div class="col-4">{{ Form.dvcGPU }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">使用者：</label>
+        <div class="col-4">{{ Form.dvcUser }}</div>
+        <label class="col-2 col-form-label text-end">ストレージ：</label>
+        <div class="col-4">{{ Form.dvcStorage }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">設置場所：</label>
+        <div class="col-4">{{ Form.dvcPlace }}</div>
+        <label class="col-2 col-form-label text-end">ネットワーク：</label>
+        <div class="col-4">{{ Form.dvcNetwork }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">管理者：</label>
+        <div class="col-4">{{ Form.dvcAdmin }}</div>
+        <label class="col-2 col-form-label text-end">ソフト：</label>
+        <div class="col-4">{{ Form.dvcSoft }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">顧客：</label>
+        <div class="col-4">{{ Form.dvcCustomer }}</div>
+        <label class="col-2 col-form-label text-end">ソフト備考：</label>
+        <div class="col-4">{{ Form.dvcSoftNote }}</div>
+      </div>
+
+      <div class="row mb-3">
+        <label class="col-2 col-form-label text-end">備考：</label>
+        <div class="col-10">{{ Form.dvcNote }}</div>
+      </div>
+    </div>
+
+    <!-- ボタン -->
+    <button class="btn btn-primary w-100 mb-3" type="submit" name="btnCreate">登録</button>
+    <button class="btn btn-secondary w-100 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
+    <button class="btn btn-danger w-100" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
+
+  </form>
+</div>
+
+{% endblock %}

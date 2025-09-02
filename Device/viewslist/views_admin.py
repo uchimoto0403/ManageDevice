@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
-#from django.views.generic import Listview 
+from django.db import transaction
 from Device.formslist.forms_admin import AdminForm
 from Device.models import UserMst
 import logging
@@ -11,35 +11,37 @@ import logging
 # 戻り値：なし
 
 def manage_admin(request, intUsr ):
-
     try:
             
             #不正アクセスが起きた場合
-            objuser = UserMst.objects.filter( id = intUsr )          
-            if objuser is None  :
+            objuser = UserMst.objects.filter(id=intUsr)        
+            if objuser.count() <= 0 :
                 
                 # ログイン画面に移行
                 request.session.flush()
-                return redirect( 'login' )
-            
+                strurl = reverse( 'login' )
+                return redirect( strurl )    
+                    
             blnname         = True
             blnloginid      = True
             blnpassword     = True
             intkind         = True
+            blnmail         = True
             blnerror        = False
             blnerror_d      = False
             
             # 引数で渡すものを指定
-            insuser = UserMst.objects.filter( id = intUsr )   # ユーザー情報
+            objuser = UserMst.objects.filter( id = intUsr )   
     
             # 共通パラメータ定義
             params = {
-                'User'                      : insuser.first(),     # ユーザー情報
-                'Form'                      : AdminForm(),         # フォーム設定
+                'User'                      : objuser,               # ユーザー情報
+                'Form'                      : AdminForm(),          # フォーム設定
                 'AccountName'               : blnname,              # アカウント名入力
                 'LoginID'                   : blnloginid,           # ログインID入力
                 'Password'                  : blnpassword,          # パスワード入力
-                'AccountKind'               : intkind,              # アカウント種類
+                'Kind'                      : intkind,              # アカウント種類
+                'Mail'                      : blnmail,              # メールアドレス
                 'RequiredError'             : blnerror,             # 入力値エラー表示
                 'DuplicateError'            : blnerror_d,           # 重複エラー表示      
                 }
@@ -58,8 +60,8 @@ def manage_admin(request, intUsr ):
     
                     # 未入力がある場合
                     if ( request.POST['chrLoginID']  == '' or 
-                        request.POST['chrPassWord'] == '' or
-                        request.POST['chrName']     == ''
+                        request.POST['chrPassWord']  == '' or
+                        request.POST['chrName']      == ''
                     ):
                         
                         blnerror    = True
@@ -71,24 +73,78 @@ def manage_admin(request, intUsr ):
     
                     objuser = None
                     objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
-                                                    usrPassWord = request.POST[ 'chrPassWord' ], 
-                                                    usrDelete   = False                            
+                                                      usrPassWord = request.POST[ 'chrPassWord' ], 
+                                                      usrName     = request.POST['chrName'],
+                                                      usrDelete   = False                            
                                                 ).first()
                     
                     # 入力に不備がある場合
                     if objuser is None :   
-                        blnerror_d  = True  
+                        blnerror  = True  
     
                         # パラメータ更新
                         params['DuplicateError'] = blnerror_d
     
                         return render( request, 'Manage_Admin.html', params )
+                    
+                    # 入力された名前が既に存在する場合
+                    objuser = UserMst.objects.filter( usrName    = request.POST[ 'chrName' ],
+                                                      usrDelete  = False                            
+                                                    ).first()   
+                    if objuser is not None :
+                        blnerror_d  = True
+
+                        # パラメータ更新
+                        params['DuplicateError'] = blnerror_d
+                        return render( request, 'Manage_Admin.html', params )
+                    
+                    # 入力されたログインIDが既に存在する場合
+                    objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
+                                                      usrDelete  = False                            
+                                                    ).first()
+                    if objuser is not None :
+                        blnerror_d  = True
+
+                        # パラメータ更新
+                        params['DuplicateError'] = blnerror_d
+                        return render( request, 'Manage_Admin.html', params )                       
+
                     # 入力に不備がない場合
                     else :
+                        # トランザクション設定
+                        with transaction.atomic():
+
+                            # 管理者新規作成
+                            objuser = UserMst()
                         
-                        # ホーム画面に移行
-                        strurl = reverse( 'home_admin', kwargs = { 'intUsr' : intUsr } )
+                        # 入力されたデータ登録
+                        objuser.usrName        = request.POST['chrName']
+                        objuser.usrLoginID     = request.POST['chrLoginID']
+                        objuser.usrPassWord    = request.POST['chrPassWord']
+                        objuser.usrMail        = request.POST['chrMail']
+                        objuser.usrKind        = 2
+                        objuser.usrDelete      = False
+                        objuser.save()
+                        strurl = reverse( 'manage_admin', kwargs = { 'intUsr' : intUsr } )
                         return redirect( strurl )
+                    
+                # 編集ボタン押下時
+                elif 'btnEdit' in request.POST:
+
+                    return render( request, 'customer_m.html', params )
+            
+                # 保存ボタン押下時
+                elif 'btnSave' in request.POST:
+
+                    return render( request, 'customer_m.html', params )
+            
+                # 削除ボタン押下時
+                elif 'btnDelete' in request.POST:
+                    with transaction.atomic():
+                        objuser.usrDelete = True
+                        objuser.save()
+
+                    return render( request, 'Manage_Admin.html', params )
                     
                 # 戻るボタン押下時
                 if 'btnBack' in request.POST:

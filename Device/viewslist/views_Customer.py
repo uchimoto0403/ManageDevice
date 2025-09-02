@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from Device.formslist.forms_customer import CustomerForm
 from Device.models import UserMst
 import logging
 #------------------------------------------------------------------------------------------------#
@@ -12,8 +13,8 @@ def manage_customer(request, intUsr ):
     try:
          
         #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter( id = intUsr )          
-        if objuser is None  :
+        objuser = UserMst.objects.filter(id=intUsr)    
+        if objuser.count() <= 0 : 
             
             # ログイン画面に移行
             request.session.flush()
@@ -25,9 +26,11 @@ def manage_customer(request, intUsr ):
         intkind         = True
         blnerror        = False
         blnerror_d      = False
-        
-        # 引数で渡すものを指定
-        insuser = UserMst.objects.filter( id = intUsr )   # ユーザー情報
+        objuser = UserMst.objects.filter(id=intUsr)
+
+        insform = CustomerForm()
+
+
 
         # 共通パラメータ定義
         params = {
@@ -36,14 +39,16 @@ def manage_customer(request, intUsr ):
             'Password'                  : blnpassword,          # パスワード入力
             'AccountKind'               : intkind,              # アカウント種類
             'RequiredError'             : blnerror,             # 入力値エラー表示
-            'DuplicateError'            : blnerror_d,           # 重複エラー表示      
+            'DuplicateError'            : blnerror_d,           # 重複エラー表示
+            'User'                      : objuser,              # ユーザー情報
+            'Form'                      : insform,              # フォーム設定      
             }
          
         # GET時処理
         if request.method == 'GET':
 
             # ホーム画面表示
-            return render( request, 'Manage_cutomer.html', params )    
+            return render( request, 'Manage_customer.html', params )    
         
         # POST時処理
         if request.method == 'POST':
@@ -100,16 +105,16 @@ def manage_customer(request, intUsr ):
                 # 入力に不備がない場合
                 else :
                     # ユーザーマスタ登録
-                    insuser = UserMst()
-                    insuser.usrLoginID   = request.POST['chrLoginID']
-                    insuser.usrPassWord  = request.POST['chrPassWord']
-                    insuser.usrName      = request.POST['chrName']
-                    insuser.usrKind      = 1
-                    insuser.usrMail      = request.POST['chrMailAddress']
-                    insuser.usrCustomer  = request.POST['chrName']
-                    insuser.save()
+                    objuser = UserMst()
+                    objuser.usrLoginID   = request.POST['chrLoginID']
+                    objuser.usrPassWord  = request.POST['chrPassWord']
+                    objuser.usrName      = request.POST['chrName']
+                    objuser.usrKind      = 1
+                    objuser.usrMail      = request.POST['chrMailAddress']
+                    objuser.usrCustomer  = request.POST['chrName']
+                    objuser.save()
 
-                    return render( request, 'customer.html', params )
+                return render( request, 'customer.html', params )
             
             # 編集ボタン押下時
             elif 'btnEdit' in request.POST:
@@ -152,3 +157,5 @@ def manage_customer(request, intUsr ):
         # ログイン画面に移行
         strurl = reverse( 'login' )
         return redirect( strurl )
+    
+    return render(request, 'Manage_Customer.html', params)
