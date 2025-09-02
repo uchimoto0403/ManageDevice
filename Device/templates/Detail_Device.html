@@ -60,6 +60,12 @@
     <div>{{ device.dvcPlace }}</div>
   </div>
 
+  {% if device.softwares.exists %}
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#softModal">
+    ソフト詳細
+  </button>
+  {% endif %}
+
   <div class="mb-3 col-4">
     <label class="fw-bold col-8">備考欄：</label>
     <div style="white-space: pre-wrap;">{{ device.dvcNotes }}</div>

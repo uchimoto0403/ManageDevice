@@ -20,8 +20,4 @@ urlpatterns = [
 
     path('manage_customer/<int:intUsr>/', views_customer.manage_customer, name='manage_customer'),
 
-
-
- 
-
-]
+] 

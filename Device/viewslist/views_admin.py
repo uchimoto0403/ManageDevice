@@ -91,7 +91,7 @@ def manage_admin(request, intUsr ):
                     objuser = UserMst.objects.filter( usrName    = request.POST[ 'chrName' ],
                                                       usrDelete  = False                            
                                                     ).first()   
-                    if objuser is not None :
+                    if objuser.count() > 0 :
                         blnerror_d  = True
 
                         # パラメータ更新
