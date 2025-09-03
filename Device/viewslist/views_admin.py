@@ -102,7 +102,7 @@ def manage_admin(request, intUsr ):
                     objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
                                                       usrDelete  = False                            
                                                     ).first()
-                    if objuser is not None :
+                    if objuser.count() > 0 :
                         blnerror_d  = True
 
                         # パラメータ更新
@@ -135,7 +135,7 @@ def manage_admin(request, intUsr ):
             
                 # 保存ボタン押下時
                 elif 'btnSave' in request.POST:
-
+                    
                     return render( request, 'customer_m.html', params )
             
                 # 削除ボタン押下時

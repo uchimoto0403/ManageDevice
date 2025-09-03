@@ -129,6 +129,8 @@ def manage_customer(request, intUsr ):
             # 削除ボタン押下時
             elif 'btnDelete' in request.POST:
 
+                
+
                 return render( request, 'customer_m.html', params )
             
             # 戻るボタン押下時

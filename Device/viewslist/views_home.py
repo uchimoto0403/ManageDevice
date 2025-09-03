@@ -81,6 +81,7 @@ def home_customer(request, intUsr ):
                         device.dvcPlace,
                         sw_names,
                         sw_warranties,  
+                        device.dvcNotes,
                     ]
 
                     for col_offset, value in enumerate(values):

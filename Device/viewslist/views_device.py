@@ -54,25 +54,32 @@ def manage_device(request, intUsr ):
             if 'btnSearch' in request.POST:
 
                 # 顧客を選択していない場合
-                strurl = reverse( 'create_device', kwargs = { 'intUsr' : objuser.id } )
-                return redirect( strurl ) 
+                if not objuser.usrCustomer:
+                    strurl = reverse( 'create_device', kwargs = { 'intUsr' : objuser.id } )
+                    return redirect( strurl )
+
+                # 選択した顧客の機器が登録されていない場合
+                if not DeviceMst.objects.filter(dvcCustomer=objuser).exists():
+                    strurl = reverse( 'create_device', kwargs = { 'intUsr' : objuser.id } )
+                    return redirect( strurl )
                 
-                # 顧客を選択していない場合
+                else :
+                    # 選択した顧客の機器情報を取得
+                    devices = DeviceMst.objects.filter(dvcCustomer=objuser)
+                    render( request, 'manage.device.html', { 'User': objuser, 'Devices': devices } )
 
             # ソフト確認ボタン押下時
             if 'btnCheck' in request.POST:
 
-                # 機器登録画面に移行
-                strurl = reverse( 'create_device', kwargs = { 'intUsr' : objuser.id } )
-                return redirect( strurl ) 
-            
+                return render( request, 'manage.device.html', { 'User': objuser, 'Devices': devices } )
+
             # 編集ボタン押下時
             if 'btnEdit' in request.POST:
 
-                # 機器登録画面に移行
-                strurl = reverse( 'create_device', kwargs = { 'intUsr' : objuser.id } )
-                return redirect( strurl ) 
-            
+                # redirect関数を使用し機器編集画面表示
+                strurl = reverse( 'edit_device', kwargs = { 'intUsr' : objuser.id, 'intDvc' : device.id } )
+                return redirect( strurl )
+
             # 削除ボタン押下時
             if 'btnDelete' in request.POST:
                     # トランザクション設定
@@ -388,4 +395,15 @@ def create_device(request, intUsr ):
 # 引　数：リクエスト　ユーザーID　機器ID
 # 戻り値：なし
 
-# def create_device(request, intUsr, intDevice ):
+def edit_device(request, intUsr, intDevice ):
+
+        #不正アクセスが起きた場合
+        objuser = UserMst.objects.filter(id=intUsr)      
+        if objuser.count() <= 0 : 
+            
+            # ログイン画面に移行
+            request.session.flush()
+            strurl = reverse( 'login' )
+            return redirect( strurl )
+        
+        
