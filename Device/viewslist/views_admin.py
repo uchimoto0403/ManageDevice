@@ -131,6 +131,10 @@ def manage_admin(request, intUsr ):
                 # 編集ボタン押下時
                 elif 'btnEdit' in request.POST:
 
+                    # 押下した顧客情報取得
+                    objuser = UserMst.objects.get( id = intUsr )
+
+
                     return render( request, 'customer_m.html', params )
             
                 # 保存ボタン押下時
