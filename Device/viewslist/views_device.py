@@ -140,20 +140,6 @@ def manage_device(request, intUsr ):
                     for col_offset, value in enumerate(values):
                         ws.cell(row=row_num, column=start_col + col_offset, value=value)
 
-                # ===== 自動列幅調整 =====
-                for col in ws.columns:
-                    max_length = 0
-                    col_letter = get_column_letter(col[0].column)
-                    for cell in col:
-                        try:
-                            if cell.value:
-                                max_length = max(max_length, len(str(cell.value)))
-                        except:
-                            pass
-                    adjusted_width = max_length + 2  # 余白を持たせる
-                    ws.column_dimensions[col_letter].width = adjusted_width
-
-
                 # HttpResponseを使用してExcelファイルを返す
                 from django.http import HttpResponse       
                 response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -231,14 +217,7 @@ def detail_device(request, intUsr, intDevice ):
             if 'btnBack' in request.POST:
 
                 # ホーム画面に移行
-                strurl = reverse( 'home_customer', kwargs = { 'intUsr'  : intUsr } )
-                return redirect( strurl )
-            
-            # 戻るボタン(モーダル)押下時
-            if 'btnBack' in request.POST:
-
-                # ホーム画面に移行
-                strurl = reverse( 'home_customer', kwargs = { 'intUsr'  : intUsr } )
+                strurl = reverse( 'home_customer', kwargs = { 'strusrid'  : intUsr } )
                 return redirect( strurl )
             
             # ログアウトボタン押下時
@@ -279,23 +258,18 @@ def create_device(request, intUsr ):
                 return redirect( 'login' )
             
             blnname         = True
-            blnloginid      = True
-            blnpassword     = True
-            intkind         = True
             blnerror        = False
             blnerror_d      = False
             
             # 引数で渡すものを指定
-            objuser = UserMst.objects.filter( id = intUsr )   
-    
+            objuser = UserMst.objects.filter( id = intUsr ) 
+            devices = DeviceMst.objects.filter( usrID = objuser, devDelete = False )
+
             # 共通パラメータ定義
             params = {
                 'User'                      : objuser,               # ユーザー情報
                 'Form'                      : DeviceForm(),          # フォーム設定
                 'AccountName'               : blnname,              # アカウント名入力
-                'LoginID'                   : blnloginid,           # ログインID入力
-                'Password'                  : blnpassword,          # パスワード入力
-                'AccountKind'               : intkind,              # アカウント種類
                 'RequiredError'             : blnerror,             # 入力値エラー表示
                 'DuplicateError'            : blnerror_d,           # 重複エラー表示      
                 }
@@ -340,38 +314,40 @@ def create_device(request, intUsr ):
     
                         return render( request, 'Manage_Admin.html', params )
                     
-                    # 入力された名前が既に存在する場合
+                    # 入力された機器名が既に存在する場合
 
-                    objuser = UserMst.objects.filter( usrName    = request.POST[ 'chrName' ],
-                                                      usrDelete  = False                            
+                    objuser = DeviceMst.objects.filter( devName    = request.POST[ 'chrName' ],
+                                                        devDelete  = False                            
                                                     ).first()   
                     if objuser is not None :
                         blnerror_d  = True
                         # パラメータ更新
                         params['DuplicateError'] = blnerror_d
-                        return render( request, 'Manage_Admin.html', params )
-                    
-                    # 入力されたログインIDが既に存在する場合
-                    objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
-                                                      usrDelete  = False                            
-                                                    ).first()
-                    if objuser is not None :
-                        blnerror_d  = True
-                        # パラメータ更新
-                        params['DuplicateError'] = blnerror_d
-                        return render( request, 'Manage_Admin.html', params )                       
+                        return render( request, 'Manage_Admin.html', params )                   
 
                     # 入力に不備がない場合
                     else :
                         
                         # 入力されたデータ登録
-                        objuser = UserMst()
-                        objuser.usrName        = request.POST['chrName']
-                        objuser.usrLoginID     = request.POST['chrLoginID']
-                        objuser.usrPassWord    = request.POST['chrPassWord']
-                        objuser.usrKind        = 2
-                        objuser.usrDelete      = False
-                        objuser.save()
+                        devices = DeviceMst()
+                        devices.dvcKind = request.POST['chrKind']
+                        devices.dvcMaker = request.POST['chrMaker']
+                        devices.dvcPurchase = request.POST['chrPurchase']
+                        devices.dvcWarranty = request.POST['chrWarranty']
+                        devices.dvcUser = request.POST['chrUser']
+                        devices.dvcPlace = request.POST['chrPlace']
+                        devices.dvcAssetnumber = request.POST['chrAssetnumber']
+                        devices.dvcStatus = request.POST['chrStatus']
+                        devices.dvcSerialnumber = request.POST['chrSerialnumber']
+                        devices.dvcOS = request.POST['chrOS']
+                        devices.dvcCPU = request.POST['chrCPU']
+                        devices.dvcRAM = request.POST['chrRAM']
+                        devices.dvcGraphic = request.POST['chrGraphic']
+                        devices.dvcStorage = request.POST['chrStorage']
+                        devices.dvcIP = request.POST['chrIP']
+                        devices.dvcNetWork = request.POST['chrNetWork']
+                        devices.dvcNotes = request.POST['chrNotes']
+                        devices.save()
                         strurl = reverse( 'home_admin', kwargs = { 'intUsr' : intUsr } )
 
                     return redirect( strurl )
@@ -383,13 +359,7 @@ def create_device(request, intUsr ):
         # ログ出力
         logger = logging.getLogger(__name__)
         logger.error( request )
-        logger.error( traceback.format_exc() )
-
-        # ログイン画面に移行
-        strurl = reverse( 'login' )
-        return redirect( strurl )                
-                    
-
+        logger.error( traceback.format_exc() )          
 
 # 機器編集
 # 引　数：リクエスト　ユーザーID　機器ID
@@ -397,13 +367,117 @@ def create_device(request, intUsr ):
 
 def edit_device(request, intUsr, intDevice ):
 
-        #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter(id=intUsr)      
-        if objuser.count() <= 0 : 
+    try:
             
-            # ログイン画面に移行
-            request.session.flush()
-            strurl = reverse( 'login' )
-            return redirect( strurl )
-        
+            #不正アクセスが起きた場合
+            objuser = UserMst.objects.filter(id=intUsr)        
+            if objuser.count() <= 0 :
+                
+                # ログイン画面に移行
+                request.session.flush()
+                return redirect( 'login' )
+            
+            blnname         = True
+            blnerror        = False
+            blnerror_d      = False
+            
+            # 引数で渡すものを指定
+            objuser = UserMst.objects.filter( id = intUsr ) 
+            devices = DeviceMst.objects.filter( usrID = objuser, devDelete = False )
+
+            # 共通パラメータ定義
+            params = {
+                'User'                      : objuser,               # ユーザー情報
+                'Form'                      : DeviceForm(),          # フォーム設定
+                'AccountName'               : blnname,              # アカウント名入力
+                'RequiredError'             : blnerror,             # 入力値エラー表示
+                'DuplicateError'            : blnerror_d,           # 重複エラー表示      
+                }
+            
+            # GET時処理
+            if request.method == 'GET':
+    
+                # ホーム画面表示
+                return render( request, 'Manage_Admin.html', params )    
+            
+            # POST時処理
+            if request.method == 'POST':
+    
+                # 登録ボタン押下時
+                if 'btnCreate' in request.POST:
+    
+                    # 未入力がある場合
+                    if ( request.POST['chrLoginID']  == '' or 
+                        request.POST['chrPassWord']  == '' or
+                        request.POST['chrName']      == ''
+                    ):
+                        
+                        blnerror    = True
+    
+                        # パラメータ更新
+                        params['RequiredError'] = blnerror
+    
+                        return render( request, 'Manage_Admin.html', params )    
+    
+                    objuser = None
+                    objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
+                                                      usrPassWord = request.POST[ 'chrPassWord' ], 
+                                                      usrDelete   = False                            
+                                                ).first()
+                    
+                    # 入力に不備がある場合
+                    if objuser is None :   
+                        blnerror_d  = True  
+    
+                        # パラメータ更新
+                        params['DuplicateError'] = blnerror_d
+    
+                        return render( request, 'Manage_Admin.html', params )
+                    
+                    # 入力された機器名が既に存在する場合
+
+                    objuser = DeviceMst.objects.filter( devName    = request.POST[ 'chrName' ],
+                                                        devDelete  = False                            
+                                                    ).first()   
+                    if objuser is not None :
+                        blnerror_d  = True
+                        # パラメータ更新
+                        params['DuplicateError'] = blnerror_d
+                        return render( request, 'Manage_Admin.html', params )                   
+
+                    # 入力に不備がない場合
+                    else :
+                        
+                        # 入力されたデータ登録
+                        devices = DeviceMst()
+                        devices.dvcKind = request.POST['chrKind']
+                        devices.dvcMaker = request.POST['chrMaker']
+                        devices.dvcPurchase = request.POST['chrPurchase']
+                        devices.dvcWarranty = request.POST['chrWarranty']
+                        devices.dvcUser = request.POST['chrUser']
+                        devices.dvcPlace = request.POST['chrPlace']
+                        devices.dvcAssetnumber = request.POST['chrAssetnumber']
+                        devices.dvcStatus = request.POST['chrStatus']
+                        devices.dvcSerialnumber = request.POST['chrSerialnumber']
+                        devices.dvcOS = request.POST['chrOS']
+                        devices.dvcCPU = request.POST['chrCPU']
+                        devices.dvcRAM = request.POST['chrRAM']
+                        devices.dvcGraphic = request.POST['chrGraphic']
+                        devices.dvcStorage = request.POST['chrStorage']
+                        devices.dvcIP = request.POST['chrIP']
+                        devices.dvcNetWork = request.POST['chrNetWork']
+                        devices.dvcNotes = request.POST['chrNotes']
+                        devices.save()
+                        strurl = reverse( 'home_admin', kwargs = { 'intUsr' : intUsr } )
+
+                    return redirect( strurl )
+                
+    except:
+        # トレース設定
+        import traceback
+
+        # ログ出力
+        logger = logging.getLogger(__name__)
+        logger.error( request )
+        logger.error( traceback.format_exc() )               
         

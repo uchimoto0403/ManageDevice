@@ -50,7 +50,7 @@ def manage_admin(request, intUsr ):
             if request.method == 'GET':
     
                 # ホーム画面表示
-                return render( request, 'Manage_Admin.html', params )    
+                return render( request, 'manage_admin.html', params )    
             
             # POST時処理
             if request.method == 'POST':
@@ -69,7 +69,7 @@ def manage_admin(request, intUsr ):
                         # パラメータ更新
                         params['RequiredError'] = blnerror
     
-                        return render( request, 'Manage_Admin.html', params )    
+                        return render( request, 'manage_admin.html', params )    
     
                     objuser = None
                     objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
@@ -85,7 +85,7 @@ def manage_admin(request, intUsr ):
                         # パラメータ更新
                         params['DuplicateError'] = blnerror_d
     
-                        return render( request, 'Manage_Admin.html', params )
+                        return render( request, 'manage_admin.html', params )
                     
                     # 入力された名前が既に存在する場合
                     objuser = UserMst.objects.filter( usrName    = request.POST[ 'chrName' ],
@@ -96,7 +96,7 @@ def manage_admin(request, intUsr ):
 
                         # パラメータ更新
                         params['DuplicateError'] = blnerror_d
-                        return render( request, 'Manage_Admin.html', params )
+                        return render( request, 'manage_admin.html', params )
                     
                     # 入力されたログインIDが既に存在する場合
                     objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
@@ -107,7 +107,7 @@ def manage_admin(request, intUsr ):
 
                         # パラメータ更新
                         params['DuplicateError'] = blnerror_d
-                        return render( request, 'Manage_Admin.html', params )                       
+                        return render( request, 'manage_admin.html', params )                       
 
                     # 入力に不備がない場合
                     else :
@@ -133,22 +133,63 @@ def manage_admin(request, intUsr ):
 
                     # 押下した顧客情報取得
                     objuser = UserMst.objects.get( id = intUsr )
-
-
-                    return render( request, 'customer_m.html', params )
+                    return render( request, 'manage_admin.html', params )
             
                 # 保存ボタン押下時
                 elif 'btnSave' in request.POST:
+
+                    # 入力内容に未入力があった場合
+                    if not request.POST['chrName'] or not request.POST['chrLoginID'] or not request.POST['chrPassWord']:
+                        blnerror = True
+                        params['InputError'] = blnerror
+                        return render( request, 'manage_admin.html', params )
+                
+                    # 入力内容に不備があった場合
+                    elif not request.POST['chrName'] or not request.POST['chrLoginID'] or not request.POST['chrPassWord']:
+                        blnerror = True
+                        params['InputError'] = blnerror     
+                        return render( request, 'manage_admin.html', params )
                     
-                    return render( request, 'customer_m.html', params )
-            
+                    # 入力された管理者名がすでにDB(編集アカウント以外)に登録されている場合
+                    objuser = UserMst.objects.filter( usrName = request.POST[ 'chrName' ],
+                                                       usrDelete = False ).exclude( id = intUsr ).first()
+                    if objuser:
+                        blnerror = True
+                        params['InputError'] = blnerror
+                        return render( request, 'manage_admin.html', params )
+                    
+                    # 入力されたログインIDがDB(編集アカウント以外)に登録されている場合
+                    objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
+                                                       usrDelete = False ).exclude( id = intUsr ).first()
+                    if objuser:
+                        blnerror = True
+                        params['InputError'] = blnerror
+                        return render( request, 'manage_admin.html', params )
+                    
+                    else :
+                        with transaction.atomic():
+                            objuser = UserMst.objects.get( id = intUsr )
+                            objuser.usrName      = request.POST['chrName']
+                            objuser.usrLoginID   = request.POST['chrLoginID']
+                            objuser.usrPassWord  = request.POST['chrPassWord']
+                            objuser.usrMail      = request.POST['chrMail']
+                            objuser.save()
+
+                        strurl = reverse( 'manage_admin', kwargs = { 'intUsr' : intUsr } )
+
                 # 削除ボタン押下時
                 elif 'btnDelete' in request.POST:
-                    with transaction.atomic():
-                        objuser.usrDelete = True
-                        objuser.save()
+                    # 削除される管理者が1人だけの時
+                    if UserMst.objects.filter( usrKind = 2, usrDelete = False ).count() <= 1 :
+                        params['DeleteError'] = True
+                        return render( request, 'manage_admin.html', params )
+                    else :
 
-                    return render( request, 'Manage_Admin.html', params )
+                        with transaction.atomic():
+                            objuser.usrDelete = True
+                            objuser.save()
+
+                    return render( request, 'manage_admin.html', params )
                     
                 # 戻るボタン押下時
                 if 'btnBack' in request.POST:
@@ -173,4 +214,4 @@ def manage_admin(request, intUsr ):
         logger.error( request )
         logger.error( traceback.format_exc() )
 
-    return render(request, 'Manage_Admin.html', params)
+    return render(request, 'manage_admin.html', params)

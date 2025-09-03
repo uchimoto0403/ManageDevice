@@ -10,11 +10,11 @@ import logging
 #引　数：リクエスト　ユーザー種類
 #戻り値：なし
 
-def home_customer(request, intUsr ):
+def home_customer(request, strusrid ):
     try:
          
         #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter(id=intUsr)     
+        objuser = UserMst.objects.filter(id=strusrid)     
         if objuser.count() <= 0 : 
             
             # ログイン画面に移行
@@ -22,14 +22,15 @@ def home_customer(request, intUsr ):
             strurl = reverse( 'login' )
             return redirect( strurl )
         
-        objuser = UserMst.objects.get(id=intUsr)
+        objuser = UserMst.objects.get(id=strusrid)
         devices = DeviceMst.objects.filter( dvcCustomer = objuser )  
 
         # 共通パラメータ定義
         params = {
             'User'          : objuser,
-            'devices'       : devices,                    
-            }
+            'devices'       : devices,
+            'strusrid'      : strusrid,
+        }
          
         # GET時処理
         if request.method == 'GET':
@@ -44,7 +45,7 @@ def home_customer(request, intUsr ):
             if 'btnDetail' in request.POST:
 
                 # 詳細画面に移行
-                strurl = reverse( 'detail_device', kwargs = { 'intUsr'  : intUsr , 'strDvcID' : request.POST['btnDetail'] } )
+                strurl = reverse( 'detail_device', kwargs = { 'strusrid'  : strusrid , 'strDvcID' : request.POST['btnDetail'] } )
                 return redirect( strurl )
             
             # 出力ボタン押下時
@@ -81,25 +82,11 @@ def home_customer(request, intUsr ):
                         device.dvcPlace,
                         sw_names,
                         sw_warranties,  
-                        device.dvcNotes,
+                        device.dvcNotes
                     ]
 
                     for col_offset, value in enumerate(values):
                         ws.cell(row=row_num, column=start_col + col_offset, value=value)
-
-                # ===== 自動列幅調整 =====
-                for col in ws.columns:
-                    max_length = 0
-                    col_letter = get_column_letter(col[0].column)
-                    for cell in col:
-                        try:
-                            if cell.value:
-                                max_length = max(max_length, len(str(cell.value)))
-                        except:
-                            pass
-                    adjusted_width = max_length + 2  # 余白を持たせる
-                    ws.column_dimensions[col_letter].width = adjusted_width
-
 
                 # HttpResponseを使用してExcelファイルを返す
                 from django.http import HttpResponse       
@@ -134,19 +121,19 @@ def home_customer(request, intUsr ):
 #引　数：リクエスト　ユーザー種類
 #戻り値：なし
 
-def home_admin(request, intUsr):
+def home_admin(request, strusrid):
     
     try:
        
         #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter(id=intUsr)        
+        objuser = UserMst.objects.filter(id=strusrid)        
         if objuser.count() <= 0 : 
 
             # ログイン画面に移行
             request.session.flush()
             return redirect( 'login' )
         
-        objuser = UserMst.objects.get(id=intUsr)
+        objuser = UserMst.objects.get(id=strusrid)
         
         # 共通パラメータ定義
         params = {
@@ -166,21 +153,21 @@ def home_admin(request, intUsr):
             if 'btnCustomer' in request.POST:
 
                 # 顧客管理画面に移行
-                strurl = reverse( 'manage_customer', kwargs = { 'intUsr' : objuser.id } )
+                strurl = reverse( 'manage_customer', kwargs = { 'strusrid' : objuser.id } )
                 return redirect( strurl )  
             
             # 機器管理ボタン押下時
             elif 'btnDevice' in request.POST:
 
                 # 機器管理画面に移行
-                strurl = reverse( 'manage_device', kwargs = { 'intUsr' : objuser.id } )
+                strurl = reverse( 'manage_device', kwargs = { 'strusrid' : objuser.id } )
                 return redirect( strurl )  
             
             # 管理者管理ボタン押下時
             elif 'btnAdmin' in request.POST:
 
                 # 管理者管理画面に移行
-                strurl = reverse( 'manage_admin', kwargs = { 'intUsr' : objuser.id } )
+                strurl = reverse( 'manage_admin', kwargs = { 'strusrid' : objuser.id } )
                 return redirect( strurl )  
             
             # ログアウトボタン押下時

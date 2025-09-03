@@ -7,7 +7,7 @@
       crossorigin="anonymous">
 
 <div class="d-flex align-items-center justify-content-center ">
-  <form action="{% url 'manage_customer' intUsr=User.id %}" method="post"  style="min-width: 400px;">
+  <form action="{% url 'manage_customer' intUsr=intUsr %}" method="post"  style="min-width: 400px;">
     {% csrf_token %}
     
     <div class="fs-4 text-center mb-4">
@@ -41,8 +41,7 @@
     <div class="row mb-3">
       <label class="col-4 col-form-label text-end">機器配置図：</label>
       <div class="col-8">
-       <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal"></button>
-        
+        <input type="file" class="form-control" name="device_map">
       </div>
     </div>
 
@@ -64,23 +63,20 @@
         <tbody>
           {% for user in customers %}
           <tr>
-            <td>{{ user.chrName }}</td>
-            <td>{{ user.chrLoginID }}</td>
+            <td>{{ customers.chrName }}</td>
+            <td>{{ customers.chrLoginID }}</td>
             <td>****</td> 
             <td>
-              <button class="btn btn-primary w-100 mb-3" type="submit" name="btnUpload">アップロード</button>
+              <button class="btn btn-primary w-100 mb-3" type="submit" name="btnUpload" formnovalidate>アップロード</button>
             </td>
             <td>
-              <button class="btn btn-primary w-100 mb-3" type="submit" name="btnCheck">確認</button>
+              <button class="btn btn-primary w-100 mb-3" type="submit" name="btnCheck" formnovalidate>確認</button>
             </td>
             <td>
-              <a href="{% url 'edit_customer' user.id %}" class="btn btn-sm btn-primary">編集</a>
+              <a href="#" class="btn btn-sm btn-primary">編集</a>
             </td>
             <td>
-              <form action="{% url 'delete_customer' user.id %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-danger">削除</button>
-              </form>
+              <button type="button" class="btn btn-sm btn-danger">削除</button>
             </td>
           </tr>
           {% empty %}

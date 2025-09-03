@@ -1,7 +1,12 @@
 
 from django import forms
-
+from django.core.validators import RegexValidator
 # --------------------------------------------------------------------- #
+
+halfwidth_validator = RegexValidator(
+    regex=r'^[\x20-\x7E]*$',   #
+    message='半角英数字と記号のみ入力してください。',
+)
 
 # ログインフォーム
 class LoginForm( forms.Form ):
@@ -17,7 +22,8 @@ class LoginForm( forms.Form ):
                 'pattern' : '^[A-Za-z0-9_@.]+$',
                 'placeholder': 'ログインIDを入力して下さい' } ),
         required = True,
-            error_messages={'required': 'ログインIDが未入力です',} )
+            error_messages={'required': 'ログインIDが未入力です'},
+            validators=[halfwidth_validator], )
     
     # パスワード
     chrPassWord = forms.CharField(

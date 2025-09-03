@@ -26,11 +26,8 @@ def manage_customer(request, intUsr ):
         intkind         = True
         blnerror        = False
         blnerror_d      = False
-        objuser = UserMst.objects.filter(id=intUsr)
-
+        customers = UserMst.objects.filter(id=intUsr)
         insform = CustomerForm()
-
-
 
         # 共通パラメータ定義
         params = {
@@ -40,15 +37,16 @@ def manage_customer(request, intUsr ):
             'AccountKind'               : intkind,              # アカウント種類
             'RequiredError'             : blnerror,             # 入力値エラー表示
             'DuplicateError'            : blnerror_d,           # 重複エラー表示
-            'User'                      : objuser,              # ユーザー情報
-            'Form'                      : insform,              # フォーム設定      
-            }
+            'customers'                 : customers,            # ユーザー情報
+            'Form'                      : insform,              # フォーム設定
+            'intUsr'                    : intUsr,               # ユーザーID（テンプレート用）
+        }
          
         # GET時処理
         if request.method == 'GET':
 
             # ホーム画面表示
-            return render( request, 'Manage_customer.html', params )    
+            return render( request, 'manage_customer.html', params )    
         
         # POST時処理
         if request.method == 'POST':
@@ -67,7 +65,7 @@ def manage_customer(request, intUsr ):
                     # パラメータ更新
                     params['RequiredError'] = blnerror
 
-                    return render( request, 'customer.html', params )
+                    return render( request, 'manage_customer.html', params )
 
                 objuser = None
                 objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
@@ -82,7 +80,7 @@ def manage_customer(request, intUsr ):
                     # パラメータ更新
                     params['RequiredError'] = blnerror
 
-                    return render( request, 'customer.html', params )
+                    return render( request, 'manage_customer.html', params )
                 
                 # 入力された顧客名が既に存在する場合
                 if UserMst.objects.filter( usrName = request.POST['chrName'], usrDelete = False ).exists() :
@@ -91,7 +89,7 @@ def manage_customer(request, intUsr ):
                     # パラメータ更新
                     params['DuplicateError'] = blnerror
 
-                    return render( request, 'customer.html', params )
+                    return render( request, 'manage_customer.html', params )
                 
                 # 入力されたログインIDが既に存在する場合
                 if UserMst.objects.filter( usrLoginID = request.POST['chrLoginID'], usrDelete = False ).exists() :
@@ -100,7 +98,7 @@ def manage_customer(request, intUsr ):
                     # パラメータ更新
                     params['DuplicateError'] = blnerror
 
-                    return render( request, 'customer.html', params )
+                    return render( request, 'manage_customer.html', params )
                 
                 # 入力に不備がない場合
                 else :
@@ -114,25 +112,24 @@ def manage_customer(request, intUsr ):
                     objuser.usrCustomer  = request.POST['chrName']
                     objuser.save()
 
-                return render( request, 'customer.html', params )
+                return render( request, 'manage_customer.html', params )
             
             # 編集ボタン押下時
             elif 'btnEdit' in request.POST:
 
-                return render( request, 'customer_m.html', params )
+                objuser = UserMst.objects.get( id = intUsr )
+                return render( request, 'manage_customer.html', params )
             
             # 保存ボタン押下時
             elif 'btnSave' in request.POST:
-
-                return render( request, 'customer_m.html', params )
+                
+                return render( request, 'manage_customer.html', params )
             
             # 削除ボタン押下時
             elif 'btnDelete' in request.POST:
 
-                
-
-                return render( request, 'customer_m.html', params )
-            
+                return render( request, 'manage_customer.html', params )        
+          
             # 戻るボタン押下時
 
             elif 'btnBack' in request.POST:
