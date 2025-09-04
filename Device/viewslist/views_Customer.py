@@ -31,7 +31,7 @@ def manage_customer(request, intUsr ):
 
         # 共通パラメータ定義
         params = {
-            'AccountName'               : blnname,              # アカウント名入力
+            'AccountName'               : blnname,              # 顧客名入力
             'LoginID'                   : blnloginid,           # ログインID入力
             'Password'                  : blnpassword,          # パスワード入力
             'AccountKind'               : intkind,              # アカウント種類
@@ -83,17 +83,18 @@ def manage_customer(request, intUsr ):
                     return render( request, 'manage_customer.html', params )
                 
                 # 入力された顧客名が既に存在する場合
-                if UserMst.objects.filter( usrName = request.POST['chrName'], usrDelete = False ).exists() :
-                    blnerror    = True  
-
-                    # パラメータ更新
+                if UserMst.objects.filter( usrName = request.POST['chrName'], usrDelete = False ).first :
+                    if objuser.count() > 0 :
+                        blnerror    = True                      # パラメータ更新
                     params['DuplicateError'] = blnerror
 
                     return render( request, 'manage_customer.html', params )
                 
                 # 入力されたログインIDが既に存在する場合
-                if UserMst.objects.filter( usrLoginID = request.POST['chrLoginID'], usrDelete = False ).exists() :
-                    blnerror    = True  
+                if UserMst.objects.filter( usrLoginID = request.POST['chrLoginID'],
+                                           usrDelete = False ).first()  :
+                    if objuser.count() > 0 :
+                        blnerror    = True  
 
                     # パラメータ更新
                     params['DuplicateError'] = blnerror
@@ -108,10 +109,8 @@ def manage_customer(request, intUsr ):
                     objuser.usrPassWord  = request.POST['chrPassWord']
                     objuser.usrName      = request.POST['chrName']
                     objuser.usrKind      = 1
-                    objuser.usrMail      = request.POST['chrMailAddress']
-                    objuser.usrCustomer  = request.POST['chrName']
+                    objuser.usrDelete    = False
                     objuser.save()
-
                 return render( request, 'manage_customer.html', params )
             
             # 編集ボタン押下時
@@ -131,10 +130,9 @@ def manage_customer(request, intUsr ):
                 return render( request, 'manage_customer.html', params )        
           
             # 戻るボタン押下時
-
             elif 'btnBack' in request.POST:
 
-                # ホーム画面に移行
+                # ホーム_管理者画面に移行
                 strurl = reverse( 'home_admin', kwargs = { 'intUsr' : intUsr } )
                 return redirect( strurl )
             

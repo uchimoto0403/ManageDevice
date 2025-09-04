@@ -67,12 +67,12 @@ def login( request ):
                     # 顧客でログインする場合
                     if objuser.usrKind == 1:  
                         # 顧客のホーム画面に移行
-                        strurl = reverse( 'home_customer', kwargs = { 'strusrid'  : objuser.id } )
+                        strurl = reverse( 'home_customer', kwargs = { 'struserid'  : objuser.id } )
                         return redirect( strurl )  
                     # 管理者でログインする場合
                     elif objuser.usrKind == 2:
                         # 管理者のホーム画面に移行
-                        strurl = reverse( 'home_admin', kwargs = { 'intUsr'  : objuser.id } )
+                        strurl = reverse( 'home_admin', kwargs = { 'struserid'  : objuser.id } )
                         return redirect( strurl )
                     
                 return render(request, 'login.html', params)
