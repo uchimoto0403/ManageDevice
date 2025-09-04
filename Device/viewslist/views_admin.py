@@ -10,11 +10,11 @@ import logging
 # 引数：リクエスト　ユーザー種類
 # 戻り値：なし
 
-def manage_admin(request, intUsr ):
+def manage_admin(request, struserid ):
     try:
             
         #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter(id=intUsr)        
+        objuser = UserMst.objects.filter( id = struserid )         
         if objuser.count() <= 0 :
             
             # ログイン画面に移行
@@ -26,12 +26,13 @@ def manage_admin(request, intUsr ):
         blnloginid      = True
         blnpassword     = True
         intkind         = True
-        blnmail 
         blnerror        = False
         blnerror_d      = False
         
+        
         # 引数で渡すものを指定
-        objuser = UserMst.objects.filter( id = intUsr )   
+        objuser = UserMst.objects.filter( id = struserid )   
+        admins = UserMst.objects.filter(usrKind=2, usrDelete=False)
 
         # 共通パラメータ定義
         params = {
@@ -42,7 +43,9 @@ def manage_admin(request, intUsr ):
             'Password'                  : blnpassword,          # パスワード入力
             'Kind'                      : intkind,              # アカウント種類
             'RequiredError'             : blnerror,             # 入力値エラー表示
-            'DuplicateError'            : blnerror_d,           # 重複エラー表示      
+            'DuplicateError'            : blnerror_d,           # 重複エラー表示 
+            'struserid'                 : struserid,            # ユーザーID
+            'admins'                    : admins,               # 管理者情報
             }
         
         # GET時処理
@@ -124,14 +127,14 @@ def manage_admin(request, intUsr ):
                     objuser.usrKind        = 2
                     objuser.usrDelete      = False
                     objuser.save()
-                    strurl = reverse( 'manage_admin', kwargs = { 'intUsr' : intUsr } )
+                    strurl = reverse( 'manage_admin', kwargs = { 'struserid' : struserid } )
                     return redirect( strurl )
                 
             # 編集ボタン押下時
             elif 'btnEdit' in request.POST:
 
                 # 押下した顧客情報取得
-                objuser = UserMst.objects.get( id = intUsr )
+                objuser = UserMst.objects.get( id = struserid )
                 return render( request, 'manage_admin.html', params )
         
             # 保存ボタン押下時
@@ -151,7 +154,7 @@ def manage_admin(request, intUsr ):
                 
                 # 入力された管理者名がすでにDB(編集アカウント以外)に登録されている場合
                 objuser = UserMst.objects.filter( usrName = request.POST[ 'chrName' ],
-                                                    usrDelete = False ).exclude( id = intUsr ).first()
+                                                    usrDelete = False ).exclude( id = struserid ).first()
                 if objuser:
                     blnerror = True
                     params['InputError'] = blnerror
@@ -159,7 +162,7 @@ def manage_admin(request, intUsr ):
                 
                 # 入力されたログインIDがDB(編集アカウント以外)に登録されている場合
                 objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
-                                                    usrDelete = False ).exclude( id = intUsr ).first()
+                                                    usrDelete = False ).exclude( id = struserid ).first()
                 if objuser:
                     blnerror = True
                     params['InputError'] = blnerror
@@ -167,14 +170,14 @@ def manage_admin(request, intUsr ):
                 
                 else :
                     with transaction.atomic():
-                        objuser = UserMst.objects.get( id = intUsr )
+                        objuser = UserMst.objects.get( id = struserid )
                         objuser.usrName      = request.POST['chrName']
                         objuser.usrLoginID   = request.POST['chrLoginID']
                         objuser.usrPassWord  = request.POST['chrPassWord']
                         objuser.usrMail      = request.POST['chrMail']
                         objuser.save()
 
-                    strurl = reverse( 'manage_admin', kwargs = { 'intUsr' : intUsr } )
+                    strurl = reverse( 'manage_admin', kwargs = { 'struserid' : struserid } )
 
             # 削除ボタン押下時
             elif 'btnDelete' in request.POST:
@@ -194,7 +197,7 @@ def manage_admin(request, intUsr ):
             if 'btnBack' in request.POST:
 
                 # ホーム_管理者画面に移行
-                strurl = reverse( 'home_admin', kwargs = { 'intUsr'  : intUsr } )
+                strurl = reverse( 'home_admin', kwargs = { 'struserid'  : struserid } )
                 return redirect( strurl )
             
             # ログアウトボタン押下時

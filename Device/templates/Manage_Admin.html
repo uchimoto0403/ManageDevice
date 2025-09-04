@@ -7,9 +7,8 @@
       crossorigin="anonymous">
 
 <div class="d-flex align-items-center justify-content-center ">
-  <form action="{% url 'manage_admin' intUsr=intUsr %}" method="post"  style="min-width: 400px;">
+  <form action="{% url 'manage_admin' struserid=struserid %}" method="post" style="min-width: 400px;">
     {% csrf_token %}
-    
     <div class="fs-4 text-center mb-4">
       <h1>管理者管理</h1>
     </div>
@@ -25,48 +24,66 @@
         ログインIDが重複しています
       </div>
     {% endif %}
-    
+
     <div class="container m-3">
-
-    <div class="row mb-3">
-      <label class="col-4 col-form-label text-end">名前：</label>
-      <div class="col-8">
-        {{ Form.chrName }}
+      <div class="row mb-3">
+        <label class="col-4 col-form-label text-end">名前：</label>
+        <div class="col-8">
+          {{ Form.chrName }}
+        </div>
       </div>
-    </div>
-
-    <div class="row mb-3">
-      <label class="col-4 col-form-label text-end">ログインID：</label>
-      <div class="col-8">
-        {{ Form.chrLoginID }}
+      <div class="row mb-3">
+        <label class="col-4 col-form-label text-end">ログインID：</label>
+        <div class="col-8">
+          {{ Form.chrLoginID }}
+        </div>
       </div>
-    </div>
-
-    <div class="row mb-3">
-      <label class="col-4 col-form-label text-end">パスワード：</label>
-      <div class="col-8">
-        {{ Form.chrPassWord }}
+      <div class="row mb-3">
+        <label class="col-4 col-form-label text-end">パスワード：</label>
+        <div class="col-8">
+          {{ Form.chrPassWord }}
+        </div>
       </div>
-    </div>
-
-
-    <div class="row mb-3">
-      <label class="col-4 col-form-label text-end">メールアドレス：</label>
-      <div class="col-8">
-       {{ Form.chrMail }}
+      <div class="row mb-3">
+        <label class="col-4 col-form-label text-end">メールアドレス：</label>
+        <div class="col-8">
+          {{ Form.chrMail }}
+        </div>
       </div>
+      <button class="btn btn-primary w-100 mb-3" type="submit" name="btnCreate">登録</button>
     </div>
-
-    <button class="btn btn-primary w-100 mb-3" type="submit" name="btnCreate">登録</button>
-
-
-    
-
+    <div class="container mt-4">
+      <table class="table table-bordered table-striped text-center">
+        <thead>
+          <tr>
+            <th>名前</th>
+            <th>ログインID</th>
+            <th>パスワード</th>
+            <th>メールアドレス</th>
+            <th>編集</th>
+            <th>削除</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in admins %}
+          <tr>
+            <td>{{ admins.chrName }}</td>
+            <td>{{ admins.chrLoginID }}</td>
+            <td>{{ admins.chrPassWord }}</td>
+            <td>{{ admins.chrMail }}</td>
+            <td>
+              <button type="submit" class="btn btn-sm btn-warning" name="btnEdit" value="{{ user.id }}" formnovalidate>編集</button>
+            </td>
+            <td>
+              <button type="submit" class="btn btn-sm btn-danger" name="btnDelete" value="{{ user.id }}" formnovalidate>削除</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     <button class="btn btn-danger w-100 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
-
     <button class="btn btn-danger w-100" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
-
-    
   </form>
 </div>
 <br>    

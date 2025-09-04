@@ -29,7 +29,7 @@ def home_customer(request, struserid):
         params = {
             'User'          : objuser,
             'devices'       : devices,
-            'struserid'      : struserid,
+   
         }
          
         # GET時処理
@@ -125,7 +125,7 @@ def home_admin( request, struserid ):
     try:
        
         #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter(id = struserid )         
+        objuser = UserMst.objects.filter( id = struserid )         
         if objuser.count() <= 0 : 
 
             # ログイン画面に移行

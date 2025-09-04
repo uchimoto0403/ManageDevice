@@ -7,7 +7,7 @@
       crossorigin="anonymous">
 
 <div class="d-flex align-items-center justify-content-center ">
-  <form action="{% url 'manage_customer' intUsr=intUsr %}" method="post"  style="min-width: 400px;">
+  <form action="{% url 'manage_customer' struserid=struserid %}" method="post"  style="min-width: 400px;">
     {% csrf_token %}
     
     <div class="fs-4 text-center mb-4">
@@ -41,7 +41,7 @@
     <div class="row mb-3">
       <label class="col-4 col-form-label text-end">機器配置図：</label>
       <div class="col-8">
-        <input type="file" class="form-control" name="device_map">
+  <input type="file" class="form-control" name="device_map" accept=".png,.jpg,.jpeg,image/png,image/jpeg">
       </div>
     </div>
 

@@ -1,0 +1,102 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
+      rel="stylesheet" 
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+      crossorigin="anonymous">
+
+<div class="d-flex align-items-center justify-content-center ">
+  <form action="{% url 'manage_device' struserid=struserid %}" method="post" style="min-width: 900px;">
+    {% csrf_token %}
+
+    <!-- タイトル -->
+    <div class="fs-4 text-center mb-4">
+      <h1>機器管理</h1>
+    </div>
+
+    <!-- メッセージ表示 -->
+    {% if error_customer %}
+      <div class="alert alert-danger text-center">顧客を選択してください</div>
+    {% endif %}
+    {% if error_device %}
+      <div class="alert alert-success text-center">機器が登録されていません</div>
+    {% endif %}
+    {% if error_software %}
+      <div class="alert alert-danger text-center">ソフトが登録されていません</div>
+    {% endif %}
+
+    <!-- 顧客選択と検索 -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        {% for customer in customers %}
+          <li class="list-group-item">
+            <a href="{% url 'customer_devices' customer.id %}">
+              {{ customer.usrCustomer }}
+            </a>
+          </li>
+        {% endfor %}
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-secondary w-100" type="submit" name="btnSearch">検索</button>
+      </div>
+      <div class="col-md-4 text-end">
+        <button class="btn btn-primary" type="submit" name="btnCreate">登録</button>
+      </div>
+    </div>
+
+    <!-- 機器一覧テーブル -->
+    <div class="container mt-4">
+      <table class="table table-bordered table-striped text-center">
+        <thead>
+          <tr>
+            <th>機器名</th>
+            <th>媒体</th>
+            <th>購入日</th>
+            <th>使用者</th>
+            <th>設置場所</th>
+            <th>ソフト確認</th>
+            <th>編集</th>
+            <th>削除</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for device in devices %}
+          <tr>
+            <td>{{ device.name }}</td>
+            <td>{{ device.media }}</td>
+            <td>{{ device.purchase_date }}</td>
+            <td>{{ device.user }}</td>
+            <td>{{ device.location }}</td>
+            <td>
+              <button type="submit" class="btn btn-info btn-sm mb-3" name="btnCheckSoftware" value="{{ device.id }}" formnovalidate>確認</button>
+            </td>
+            <td>
+              <button type="submit" class="btn btn-warning btn-sm mb-3" name="btnEdit" value="{{ device.id }}" formnovalidate>編集</button>
+            </td>
+            <td>
+              <button type="submit" class="btn btn-danger btn-sm" name="btnDelete" value="{{ device.id }}" formnovalidate>削除</button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8">機器が登録されていません</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 出力・戻る・ログアウト -->
+    <div class="footer-btns text-center mt-4">
+      <button class="btn btn-primary w-25 mb-3" type="submit" name="btnOutput" {% if not devices %}disabled{% endif %}>出力</button>
+      <button class="btn btn-secondary w-25 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
+      <button class="btn btn-danger w-25" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
+    </div>
+
+    <!-- ページ番号 -->
+    <div class="text-center mt-4 text-muted fs-3">1 ページ</div>
+
+  </form>
+</div>
+{% endblock %}

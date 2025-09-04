@@ -7,7 +7,7 @@
       crossorigin="anonymous">
 
 <div class="d-flex align-items-center justify-content-center ">
-  <form action="{% url 'home_customer' struserid=struserid %}" method="post"  style="min-width: 400px;">
+  <form action="{% url 'home_customer' struserid=User.id %}" method="post"  style="min-width: 400px;">
     {% csrf_token %}
     
     <div class="fs-4 text-center mb-4">
@@ -48,7 +48,7 @@
               <td>{{ device.dvcUser }}</td>
               <td>{{ device.dvcPlace }}</td>
               <td>
-                <a href="{% url 'detail_device' struserid=device.dvcCustomer.id strdevid=device.id %}" class="btn btn-sm btn-info">
+                <a href="{% url 'detail_device' struserid=User.id strdevid=device.id %}" class="btn btn-sm btn-info">
                   詳細
                 </a>
               </td>

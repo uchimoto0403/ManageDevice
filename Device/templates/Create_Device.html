@@ -7,7 +7,7 @@
       crossorigin="anonymous">
 
 <div class="d-flex align-items-center justify-content-center">
-  <form action="{% url 'create_device ' intUsr=User.id %}" method="post" style="max-width: 900px; width: 100%;">
+  <form action="{% url 'create_device' struserid=struserid %}" method="post" style="max-width: 900px; width: 100%;">
     {% csrf_token %}
     
     <!-- タイトル -->

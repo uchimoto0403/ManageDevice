@@ -14,13 +14,13 @@ import logging
 # 引　数：リクエスト　ユーザーID 機器ID
 # 戻り値：なし
 
-def manage_device(request, struserid ):
+def manage_device(request, struserid):
     try:
 
         #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter(id=struserid)      
-        if objuser.count() <= 0 : 
-            
+        objuser = UserMst.objects.filter(id=struserid)
+        if objuser.count() <= 0:
+
             # ログイン画面に移行
             request.session.flush()
             strurl = reverse( 'login' )
@@ -29,16 +29,18 @@ def manage_device(request, struserid ):
         
         objuser = UserMst.objects.get(id=struserid)
 
+
         # 共通パラメータ定義
         params = {
-            'User'          : objuser,                 
-            }
+            'User'          : objuser,
+            'struserid'     : struserid,            # ユーザーID
+           }
 
         # GET時処理
         if request.method == 'GET':
 
             # 機器管理画面表示
-            return render( request, 'manage.device.html', params ) 
+            return render( request, 'manage_device.html', params ) 
         
         # POST時処理
         if request.method == 'POST':
@@ -49,7 +51,7 @@ def manage_device(request, struserid ):
                 # 機器登録画面に移行
                 strurl = reverse( 'create_device', kwargs = { 'struserid' : objuser.id } )
                 return redirect( strurl ) 
-            
+             
             # 検索ボタン押下時
             if 'btnSearch' in request.POST:
 
@@ -59,7 +61,7 @@ def manage_device(request, struserid ):
                     return redirect( strurl )
 
                 # 選択した顧客の機器が登録されていない場合
-                if not DeviceMst.objects.filter(dvcCustomer=objuser).exists():
+                elif not DeviceMst.objects.filter(dvcCustomer=objuser).exists():
                     strurl = reverse( 'create_device', kwargs = { 'struserid' : objuser.id } )
                     return redirect( strurl )
                 
@@ -193,14 +195,16 @@ def detail_device(request, struserid, strdevid ):
         
         # 引数で渡すものを指定
         objuser = UserMst.objects.get(id=struserid)
-        device  = DeviceMst.objects.filter( id = strdevid ).first() 
+        device  = DeviceMst.objects.filter( id = strdevid )
         devicesofts = DeviceSoftMst.objects.filter(dvsDeviceID = device, dvsDeleteFlag=False )
 
         # 共通パラメータ定義
         params = {
-            'User'          : objuser,
-            'device'        : device,  
-            'devicesofts'  : devicesofts,                  
+            'User'                      : objuser,
+            'device'                    : device,  
+            'devicesofts'               : devicesofts, 
+            'struserid'                 : struserid,           # ユーザーID
+            "strdevid"                  : strdevid,            # 機器ID
             }
          
         # GET時処理
@@ -260,8 +264,8 @@ def create_device(request, struserid ):
             blnerror_d      = False
             
             # 引数で渡すものを指定
-            objuser = UserMst.objects.filter( id = struserid ) 
-            devices = DeviceMst.objects.filter( usrID = objuser, devDelete = False )
+            objuser = UserMst.objects.get( id = struserid ) 
+            devices = DeviceMst.objects.filter( dvcCustomer = objuser, dvcDeleteFlag = False )
 
             # 共通パラメータ定義
             params = {
@@ -269,14 +273,15 @@ def create_device(request, struserid ):
                 'Form'                      : DeviceForm(),          # フォーム設定
                 'AccountName'               : blnname,              # アカウント名入力
                 'RequiredError'             : blnerror,             # 入力値エラー表示
-                'DuplicateError'            : blnerror_d,           # 重複エラー表示      
+                'DuplicateError'            : blnerror_d,           # 重複エラー表示 
+                'struserid'                 : struserid,            # ユーザーID     
                 }
             
             # GET時処理
             if request.method == 'GET':
     
                 # ホーム画面表示
-                return render( request, 'Manage_Admin.html', params )    
+                return render( request, 'create_device.html', params )    
             
             # POST時処理
             if request.method == 'POST':
@@ -292,7 +297,7 @@ def create_device(request, struserid ):
                         # パラメータ更新
                         params['RequiredError'] = blnerror
     
-                        return render( request, 'Manage_Admin.html', params )    
+                        return render( request, 'create_device.html', params )    
     
                     devices = None
                     devices = UserMst.objects.filter( dvcName = request.POST['chrDevice'], dvcDelete = False ).first()
@@ -304,7 +309,7 @@ def create_device(request, struserid ):
                         # パラメータ更新
                         params['DuplicateError'] = blnerror_d
     
-                        return render( request, 'Manage_Admin.html', params )
+                        return render( request, 'create_device.html', params )
                     
                     # 入力された機器名が既に存在する場合
 
@@ -339,11 +344,50 @@ def create_device(request, struserid ):
                         devices.dvcIP           = request.POST['chrIP']
                         devices.dvcNetWork      = request.POST['chrNetWork']
                         devices.dvcNotes        = request.POST['chrNotes']
+                        devices.dvcDeleteFlag   = False
                         devices.save()
-                        strurl = reverse( 'home_admin', kwargs = { 'struserid' : struserid } )
+                        strurl = reverse( 'create_device', kwargs = { 'struserid' : struserid } )
 
                     return redirect( strurl )
                 
+                # ソフト登録ボタン押下時
+                if 'btnSoftCreate' in request.POST:
+
+                 # モーダル画面に移行
+                    return render( request, 'create_device.html', params )
+
+                # 新規登録ボタン押下時   
+                if 'btnCreateSoft' in request.POST:
+                    # 入力内容に未入力があった場合
+                    if ( request.POST['chrSoftName']  == '' or 
+                        request.POST['chrWarranty']  == '' 
+                    ):
+                        
+                        blnerror    = True
+
+                        # パラメータ更新
+                        params['RequiredError'] = blnerror
+
+                        return render( request, 'create_device.html', params )
+                    
+                    devicesoft = None
+                    devicesoft = DeviceSoftMst.objects.filter( dvsSoftName = request.POST['chrSoftName'], dvsDeleteFlag = False ).first()
+
+                # 戻るボタン押下時
+                elif 'btnBack' in request.POST:
+
+                    # ホーム_管理者画面に移行
+                    strurl = reverse( 'manage_device', kwargs = { 'struserid' : struserid } )
+                    return redirect( strurl )
+                
+                # ログアウトボタン押下時
+                elif 'btnLogout' in request.POST:
+
+                    # ログイン画面に移行
+                    return redirect( 'login' )
+
+
+                    
     except:
         # トレース設定
         import traceback
@@ -351,7 +395,11 @@ def create_device(request, struserid ):
         # ログ出力
         logger = logging.getLogger(__name__)
         logger.error( request )
-        logger.error( traceback.format_exc() )          
+        logger.error( traceback.format_exc() )  
+
+        # ログイン画面に移行
+        strurl = reverse( 'login' )
+        return redirect( strurl )        
 
 # 機器編集
 # 引　数：リクエスト　ユーザーID　機器ID
@@ -375,7 +423,7 @@ def edit_device(request, struserid, strdevid ):
         
         # 引数で渡すものを指定
         objuser = UserMst.objects.filter( id = struserid ) 
-        devices = DeviceMst.objects.filter( usrID = objuser, devDelete = False )
+        devices = DeviceMst.objects.filter( usrID = objuser, dvcDeleteFlag = False )
 
         # 共通パラメータ定義
         params = {

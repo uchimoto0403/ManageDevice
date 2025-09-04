@@ -12,9 +12,9 @@ urlpatterns = [
 
     path('manage_admin/<int:struserid>/', views_admin.manage_admin, name='manage_admin'),
 
-    path('manage_device/<int:struserid>/<int:strdevid>/', views_device.manage_device, name='manage_device'),
+    path('manage_device/<int:struserid>/', views_device.manage_device, name='manage_device'),
 
-    #path('create_device/<int:struserid>/', views_device.create_device, name='create_device'),
+    path('create_device/<int:struserid>/', views_device.create_device, name='create_device'),
 
     path('edit_device/<int:struserid>/', views_device.edit_device, name='edit_device'),
 

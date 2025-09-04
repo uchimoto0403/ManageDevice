@@ -9,11 +9,11 @@ import logging
 # 引数：リクエスト　ユーザー種類
 # 戻り値：なし
 
-def manage_customer(request, intUsr ):
+def manage_customer(request, struserid ):
     try:
          
         #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter(id=intUsr)    
+        objuser = UserMst.objects.filter(id=struserid)    
         if objuser.count() <= 0 : 
             
             # ログイン画面に移行
@@ -26,20 +26,20 @@ def manage_customer(request, intUsr ):
         intkind         = True
         blnerror        = False
         blnerror_d      = False
-        customers = UserMst.objects.filter(id=intUsr)
+        objuser = UserMst.objects.filter(id=struserid)
         insform = CustomerForm()
 
         # 共通パラメータ定義
         params = {
+            'User'                      : objuser,              # ユーザー情報
             'AccountName'               : blnname,              # 顧客名入力
             'LoginID'                   : blnloginid,           # ログインID入力
             'Password'                  : blnpassword,          # パスワード入力
             'AccountKind'               : intkind,              # アカウント種類
             'RequiredError'             : blnerror,             # 入力値エラー表示
             'DuplicateError'            : blnerror_d,           # 重複エラー表示
-            'customers'                 : customers,            # ユーザー情報
             'Form'                      : insform,              # フォーム設定
-            'intUsr'                    : intUsr,               # ユーザーID（テンプレート用）
+            'struserid'                 : struserid,
         }
          
         # GET時処理
@@ -116,7 +116,7 @@ def manage_customer(request, intUsr ):
             # 編集ボタン押下時
             elif 'btnEdit' in request.POST:
 
-                objuser = UserMst.objects.get( id = intUsr )
+                objuser = UserMst.objects.get( id = struserid )
                 return render( request, 'manage_customer.html', params )
             
             # 保存ボタン押下時
@@ -127,13 +127,16 @@ def manage_customer(request, intUsr ):
             # 削除ボタン押下時
             elif 'btnDelete' in request.POST:
 
+                objuser = UserMst.objects.get( id = struserid )
+                objuser.usrDelete = True
+                objuser.save()
                 return render( request, 'manage_customer.html', params )        
           
             # 戻るボタン押下時
             elif 'btnBack' in request.POST:
 
                 # ホーム_管理者画面に移行
-                strurl = reverse( 'home_admin', kwargs = { 'intUsr' : intUsr } )
+                strurl = reverse( 'home_admin', kwargs = { 'struserid' : struserid } )
                 return redirect( strurl )
             
             # ログアウトボタン押下時
