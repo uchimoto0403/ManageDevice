@@ -88,14 +88,11 @@
     </div>
 
     <!-- 出力・戻る・ログアウト -->
-    <div class="footer-btns text-center mt-4">
-      <button class="btn btn-primary w-25 mb-3" type="submit" name="btnOutput" {% if not devices %}disabled{% endif %}>出力</button>
-      <button class="btn btn-secondary w-25 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
-      <button class="btn btn-danger w-25" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
-    </div>
-
-    <!-- ページ番号 -->
-    <div class="text-center mt-4 text-muted fs-3">1 ページ</div>
+        <div class="footer-btns d-flex flex-column align-items-center mt-4">
+          <button class="btn btn-primary w-50 mb-3" type="submit" name="btnOutput" {% if not devices %}disabled{% endif %}>出力</button>
+          <button class="btn btn-secondary w-50 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
+          <button class="btn btn-danger w-50" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
+        </div>
 
   </form>
 </div>

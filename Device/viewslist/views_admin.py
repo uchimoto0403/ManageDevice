@@ -51,6 +51,11 @@ def manage_admin(request, struserid ):
         # GET時処理
         if request.method == 'GET':
 
+            # 登録している管理者情報を取得
+            objuser = UserMst.objects.get(id=struserid) 
+            admins = UserMst.objects.filter(usrKind=2, usrDelete=False)
+
+
             # ホーム画面表示
             return render( request, 'manage_admin.html', params )    
         

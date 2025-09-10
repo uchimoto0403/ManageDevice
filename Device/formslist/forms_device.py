@@ -17,6 +17,7 @@ class DeviceForm( forms.Form ):
         required = True )
     
     DEVICE_KIND_CHOICES = [
+        ('', '---選択してください---'),
         ('desktop', 'デスクトップPC'),
         ('laptop', 'ノートPC'),
         ('printer', 'プリンター'),
@@ -31,8 +32,8 @@ class DeviceForm( forms.Form ):
             attrs={
                 'class': 'form-control',
                 'style': 'width:80%',
-            }
-        ))
+            })
+    )
     
 # メーカー
     chrDeviceMaker = forms.CharField(  
@@ -50,7 +51,7 @@ class DeviceForm( forms.Form ):
         widget = forms.DateInput(
             attrs = {
                 'class': 'form-control',
-                'style': 'width:30% ',
+                'style': 'width:80% ',
                 'type': 'date' } ),
         required = False )
 
@@ -60,7 +61,7 @@ class DeviceForm( forms.Form ):
         widget = forms.DateInput(
             attrs = {
                 'class': 'form-control',
-                'style': 'width:30% ',
+                'style': 'width:80% ',
                 'type': 'date' } ),
         required = False )
     
@@ -185,7 +186,7 @@ class DeviceForm( forms.Form ):
                 } ), )
 
 # 備考欄
-    chrDevice = forms.CharField(
+    chrNotes = forms.CharField(
         label = '備考欄',
         max_length = 100,
         widget = forms.Textarea(

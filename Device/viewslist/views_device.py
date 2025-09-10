@@ -358,10 +358,9 @@ def create_device(request, struserid ):
 
                 # 新規登録ボタン押下時   
                 if 'btnCreateSoft' in request.POST:
+
                     # 入力内容に未入力があった場合
-                    if ( request.POST['chrSoftName']  == '' or 
-                        request.POST['chrWarranty']  == '' 
-                    ):
+                    if ( request.POST['chrSoftName']  == '' ):
                         
                         blnerror    = True
 
@@ -370,8 +369,44 @@ def create_device(request, struserid ):
 
                         return render( request, 'create_device.html', params )
                     
-                    devicesoft = None
-                    devicesoft = DeviceSoftMst.objects.filter( dvsSoftName = request.POST['chrSoftName'], dvsDeleteFlag = False ).first()
+                    else:
+                        # 入力されたデータ登録
+                        devicesoft = DeviceSoftMst()
+                        devicesoft.dvsDeviceID    = DeviceMst.objects.get( id = request.POST['intDvc'] )
+                        devicesoft.dvsSoftName    = request.POST['chrSoftName']
+                        devicesoft.dvsWarranty    = request.POST['chrWarranty']
+                        devicesoft.dvsDeleteFlag  = False
+                        devicesoft.save()
+                        
+                        return render( request, 'create_device.html', params )
+
+                # 編集ボタン押下時
+                elif 'btnEdit' in request.POST:
+                    # ソフト名が未入力の場合
+                    if ( request.POST['chrSoftName']  == '' ):
+                        
+                        blnerror    = True
+
+                        # パラメータ更新
+                        params['RequiredError'] = blnerror
+
+                        return render( request, 'create_device.html', params )
+                    
+                    else :
+                        # 入力されたデータに更新
+                        devicesoft = DeviceSoftMst.objects.get( id = request.POST['intSoftID'] )
+                        devicesoft.dvsSoftName     = request.POST['chrSoftName']    
+                        devicesoft.dvsWarranty     = request.POST['chrWarranty']
+                        devicesoft.save()
+                        return render( request, 'create_device.html', params )
+
+                # 削除ボタン押下時
+                elif 'btnDelete' in request.POST:
+
+                    devicesoft = DeviceSoftMst.objects.get( id = request.POST['intSoftID'] )
+                    devicesoft.dvsDeleteFlag = True
+                    devicesoft.save()
+                    return render( request, 'create_device.html', params )
 
                 # 戻るボタン押下時
                 elif 'btnBack' in request.POST:
@@ -506,7 +541,7 @@ def edit_device(request, struserid, strdevid ):
                     devices.dvcStorage      = request.POST['chrStorage']
                     devices.dvcIP           = request.POST['chrIP']
                     devices.dvcNetWork      = request.POST['chrNetWork']
-                    devices.dvcNotes       = request.POST['chrNotes']
+                    devices.dvcNotes        = request.POST['chrNotes']
                     devices.save()
                     strurl = reverse( 'create_device', kwargs = { 'struserid' : struserid } )
 
@@ -518,20 +553,70 @@ def edit_device(request, struserid, strdevid ):
                 # モーダル画面表示
                 return render( request, 'Manage_Admin.html', params )
             
-            # ソフト新規登録ボタン押下時
-            if 'btnAdd' in request.POST:
+            # 新規登録ボタン押下時   
+            if 'btnCreateSoft' in request.POST:
+
+                # 入力内容に未入力があった場合
+                if ( request.POST['chrSoftName']  == '' ):
+                    
+                    blnerror    = True
+
+                    # パラメータ更新
+                    params['RequiredError'] = blnerror
+
+                    return render( request, 'create_device.html', params )
                 
-                # ソフト登録画面に移行
-                strurl = reverse( 'create_devicesoft', kwargs = { 'struserid' : objuser.id, 'intDvc' : devices.id } )
+                else:
+                    # 入力されたデータ登録
+                    devicesoft = DeviceSoftMst()
+                    devicesoft.dvsDeviceID    = DeviceMst.objects.get( id = request.POST['intDvc'] )
+                    devicesoft.dvsSoftName    = request.POST['chrSoftName']
+                    devicesoft.dvsWarranty    = request.POST['chrWarranty']
+                    devicesoft.dvsDeleteFlag  = False
+                    devicesoft.save()
+                    
+                    return render( request, 'create_device.html', params )
+
+            # 編集ボタン押下時
+            elif 'btnEdit' in request.POST:
+                # ソフト名が未入力の場合
+                if ( request.POST['chrSoftName']  == '' ):
+                    
+                    blnerror    = True
+
+                    # パラメータ更新
+                    params['RequiredError'] = blnerror
+
+                    return render( request, 'create_device.html', params )
+                
+                else :
+                    # 入力されたデータに更新
+                    devicesoft = DeviceSoftMst.objects.get( id = request.POST['intSoftID'] )
+                    devicesoft.dvsSoftName     = request.POST['chrSoftName']    
+                    devicesoft.dvsWarranty     = request.POST['chrWarranty']
+                    devicesoft.save()
+                    return render( request, 'create_device.html', params )
+
+            # 削除ボタン押下時
+            elif 'btnDelete' in request.POST:
+
+                devicesoft = DeviceSoftMst.objects.get( id = request.POST['intSoftID'] )
+                devicesoft.dvsDeleteFlag = True
+                devicesoft.save()
+                return render( request, 'create_device.html', params )
+
+            # 戻るボタン押下時
+            elif 'btnBack' in request.POST:
+
+                # ホーム_管理者画面に移行
+                strurl = reverse( 'manage_device', kwargs = { 'struserid' : struserid } )
                 return redirect( strurl )
             
-            # 入力内容に未入力があった場合
-            if not request.POST['chrSoft'] == '':
-                blnerror = True
-                params['InputError'] = blnerror
-                return render( request, 'create_device.html', params )
-            
-            #  入力内容に不備があった場合
+            # ログアウトボタン押下時
+            elif 'btnLogout' in request.POST:
+
+                # ログイン画面に移行
+                return redirect( 'login' )
 
 
 

@@ -122,6 +122,51 @@ def manage_customer(request, struserid ):
             # 保存ボタン押下時
             elif 'btnSave' in request.POST:
                 
+                # 未入力がある場合
+                if ( request.POST['chrLoginID']  == '' or 
+                     request.POST['chrPassWord'] == '' or
+                     request.POST['chrName']     == ''
+                ):
+                    
+                    blnerror    = True  
+
+                    # パラメータ更新
+                    params['RequiredError'] = blnerror
+
+                    return render( request, 'manage_customer.html', params )
+                
+                # 入力に不備がある場合
+                objuser = None  
+                objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
+                                                  usrPassWord = request.POST[ 'chrPassWord' ], 
+                                                  usrDelete   = False                            
+                                                ).first()
+                if objuser is None :
+                    blnerror    = True  
+
+                    # パラメータ更新
+                    params['RequiredError'] = blnerror
+
+                    return render( request, 'manage_customer.html', params )
+                
+                # 入力された顧客名が既に存在する場合
+                if UserMst.objects.filter( usrName = request.POST['chrName'], usrDelete = False ).first :
+                    if objuser.count() > 0 :
+                        blnerror    = True                      # パラメータ更新
+                    params['DuplicateError'] = blnerror
+
+                    return render( request, 'manage_customer.html', params )
+                
+                # 入力されたログインIDが既に存在する場合
+                if UserMst.objects.filter( usrLoginID = request.POST['chrLoginID'],
+                                           usrDelete = False ).first()  :
+                    if objuser.count() > 0 :
+                        blnerror    = True  
+
+                    # パラメータ更新
+                    params['DuplicateError'] = blnerror
+                    return render( request, 'manage_customer.html', params )
+                
                 return render( request, 'manage_customer.html', params )
             
             # 削除ボタン押下時
