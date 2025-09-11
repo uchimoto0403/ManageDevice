@@ -29,13 +29,12 @@
     <!-- 顧客選択と検索 -->
     <div class="row mb-3">
       <div class="col-md-6">
-        {% for customer in customers %}
-          <li class="list-group-item">
-            <a href="{% url 'customer_devices' customer.id %}">
-              {{ customer.usrCustomer }}
-            </a>
-          </li>
-        {% endfor %}
+        <select class="form-select" name="customer_id">
+          <option value="">顧客を選択してください</option>
+          {% for customer in customers %}
+            <option value="{{ customer.id }}">{{ customer.usrCustomer }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="col-md-2">
         <button class="btn btn-secondary w-100" type="submit" name="btnSearch">検索</button>
@@ -87,10 +86,9 @@
       </table>
     </div>
 
-    <!-- 出力・戻る・ログアウト -->
-        <div class="footer-btns d-flex flex-column align-items-center mt-4">
-          <button class="btn btn-primary w-50 mb-3" type="submit" name="btnOutput" {% if not devices %}disabled{% endif %}>出力</button>
-          <button class="btn btn-secondary w-50 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
+        <div class="d-flex flex-column align-items-center gap-4 mb-5" style="max-width: 400px; margin: auto;">
+          <button class="btn btn-primary w-50" type="submit" name="btnOutput" {% if not devices %}disabled{% endif %}>出力</button>
+          <button class="btn btn-secondary w-50" type="submit" name="btnBack" formnovalidate>戻る</button>
           <button class="btn btn-danger w-50" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
         </div>
 

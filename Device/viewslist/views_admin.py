@@ -55,7 +55,6 @@ def manage_admin(request, struserid ):
             objuser = UserMst.objects.get(id=struserid) 
             admins = UserMst.objects.filter(usrKind=2, usrDelete=False)
 
-
             # ホーム画面表示
             return render( request, 'manage_admin.html', params )    
         
@@ -96,7 +95,7 @@ def manage_admin(request, struserid ):
                 
                 # 入力された名前が既に存在する場合
                 objuser = UserMst.objects.filter( usrName    = request.POST[ 'chrName' ],
-                                                    usrDelete  = False                            
+                                                  usrDelete  = False                            
                                                 ).first()   
                 if objuser.count() > 0 :
                     blnerror_d  = True
@@ -107,7 +106,7 @@ def manage_admin(request, struserid ):
                 
                 # 入力されたログインIDが既に存在する場合
                 objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
-                                                    usrDelete  = False                            
+                                                  usrDelete  = False                            
                                                 ).first()
                 if objuser.count() > 0 :
                     blnerror_d  = True

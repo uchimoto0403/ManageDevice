@@ -28,16 +28,20 @@ def manage_device(request, struserid):
         
         
         objuser = UserMst.objects.get(id=struserid)
+        customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
 
 
         # 共通パラメータ定義
         params = {
             'User'          : objuser,
             'struserid'     : struserid,            # ユーザーID
+            'customers'     : customers,            # 顧客情報
            }
 
         # GET時処理
         if request.method == 'GET':
+
+            customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
 
             # 機器管理画面表示
             return render( request, 'manage_device.html', params ) 
@@ -192,6 +196,8 @@ def detail_device(request, struserid, strdevid ):
             request.session.flush()
             strurl = reverse( 'login' )
             return redirect( strurl )
+        
+        params = {} 
         
         # 引数で渡すものを指定
         objuser = UserMst.objects.get(id=struserid)

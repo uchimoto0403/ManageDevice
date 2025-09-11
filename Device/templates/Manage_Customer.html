@@ -15,6 +15,25 @@
     </div>
 
     <div class="container m-3">
+    
+      {% if DuplicateError %}
+      <div class="alert alert-danger" role="alert">
+        顧客名が重複しています。
+      </div>
+      {% endif %}
+
+      {% if Error %}
+      <div class="alert alert-danger" role="alert">
+        入力されていない項目があります。
+      </div>
+      {% endif %}
+
+      <!-- 顧客を登録しましたメッセージ-->
+      {% if Create %}
+      <div class="alert alert-primary" role="alert">
+        顧客を登録しました。  
+      </div>
+      {% endif %}
 
     <div class="row mb-3">
       <label class="col-4 col-form-label text-end">顧客名：</label>
@@ -63,8 +82,8 @@
         <tbody>
           {% for user in customers %}
           <tr>
-            <td>{{ customers.chrName }}</td>
-            <td>{{ customers.chrLoginID }}</td>
+            <td>{{ user.usrName }}</td>
+            <td>{{ user.usrLoginID }}</td>
             <td>****</td> 
             <td>
               <button class="btn btn-primary w-100 mb-3" type="submit" name="btnUpload" formnovalidate>アップロード</button>

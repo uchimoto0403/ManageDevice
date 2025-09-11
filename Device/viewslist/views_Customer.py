@@ -27,6 +27,7 @@ def manage_customer(request, struserid ):
         blnerror        = False
         blnerror_d      = False
         objuser = UserMst.objects.filter(id=struserid)
+        customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
         insform = CustomerForm()
 
         # 共通パラメータ定義
@@ -39,11 +40,16 @@ def manage_customer(request, struserid ):
             'RequiredError'             : blnerror,             # 入力値エラー表示
             'DuplicateError'            : blnerror_d,           # 重複エラー表示
             'Form'                      : insform,              # フォーム設定
-            'struserid'                 : struserid,
+            'struserid'                 : struserid,            # ユーザーID    
+            'customers'                 : customers,            # 顧客情報
         }
          
         # GET時処理
         if request.method == 'GET':
+
+            # 登録している顧客情報を取得
+            objuser = UserMst.objects.get(id=struserid) 
+            customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
 
             # ホーム画面表示
             return render( request, 'manage_customer.html', params )    
@@ -57,7 +63,7 @@ def manage_customer(request, struserid ):
                 # 未入力がある場合
                 if ( request.POST['chrLoginID']  == '' or 
                      request.POST['chrPassWord'] == '' or
-                     request.POST['chrName']     == ''
+                     request.POST['chrCustomer'] == ''
                 ):
                     
                     blnerror    = True  
@@ -67,51 +73,27 @@ def manage_customer(request, struserid ):
 
                     return render( request, 'manage_customer.html', params )
 
-                objuser = None
-                objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
-                                                  usrPassWord = request.POST[ 'chrPassWord' ], 
-                                                  usrDelete   = False                            
-                                                ).first()                    
-
-                # 入力に不備がある場合
-                if objuser is None :
-                    blnerror    = True  
-
-                    # パラメータ更新
-                    params['RequiredError'] = blnerror
-
-                    return render( request, 'manage_customer.html', params )
-                
-                # 入力された顧客名が既に存在する場合
-                if UserMst.objects.filter( usrName = request.POST['chrName'], usrDelete = False ).first :
-                    if objuser.count() > 0 :
-                        blnerror    = True                      # パラメータ更新
+                # 顧客名重複チェック
+                if UserMst.objects.filter(usrName=request.POST['chrCustomer'], usrDelete=False).exists():
+                    blnerror = True
                     params['DuplicateError'] = blnerror
+                    return render(request, 'manage_customer.html', params)
 
-                    return render( request, 'manage_customer.html', params )
-                
-                # 入力されたログインIDが既に存在する場合
-                if UserMst.objects.filter( usrLoginID = request.POST['chrLoginID'],
-                                           usrDelete = False ).first()  :
-                    if objuser.count() > 0 :
-                        blnerror    = True  
-
-                    # パラメータ更新
+                # ログインID重複チェック
+                if UserMst.objects.filter(usrLoginID=request.POST['chrLoginID'], usrDelete=False).exists():
+                    blnerror = True
                     params['DuplicateError'] = blnerror
+                    return render(request, 'manage_customer.html', params)
 
-                    return render( request, 'manage_customer.html', params )
-                
                 # 入力に不備がない場合
-                else :
-                    # ユーザーマスタ登録
-                    objuser = UserMst()
-                    objuser.usrLoginID   = request.POST['chrLoginID']
-                    objuser.usrPassWord  = request.POST['chrPassWord']
-                    objuser.usrName      = request.POST['chrName']
-                    objuser.usrKind      = 1
-                    objuser.usrDelete    = False
-                    objuser.save()
-                return render( request, 'manage_customer.html', params )
+                objuser = UserMst()
+                objuser.usrLoginID   = request.POST['chrLoginID']
+                objuser.usrPassWord  = request.POST['chrPassWord']
+                objuser.usrName      = request.POST['chrCustomer']
+                objuser.usrKind      = 1
+                objuser.usrDelete    = False
+                objuser.save()
+                return render(request, 'manage_customer.html', params)
             
             # 編集ボタン押下時
             elif 'btnEdit' in request.POST:
@@ -125,7 +107,7 @@ def manage_customer(request, struserid ):
                 # 未入力がある場合
                 if ( request.POST['chrLoginID']  == '' or 
                      request.POST['chrPassWord'] == '' or
-                     request.POST['chrName']     == ''
+                     request.POST['chrCustomer']     == ''
                 ):
                     
                     blnerror    = True  
@@ -135,39 +117,20 @@ def manage_customer(request, struserid ):
 
                     return render( request, 'manage_customer.html', params )
                 
-                # 入力に不備がある場合
-                objuser = None  
-                objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
-                                                  usrPassWord = request.POST[ 'chrPassWord' ], 
-                                                  usrDelete   = False                            
-                                                ).first()
-                if objuser is None :
-                    blnerror    = True  
-
-                    # パラメータ更新
-                    params['RequiredError'] = blnerror
-
-                    return render( request, 'manage_customer.html', params )
-                
-                # 入力された顧客名が既に存在する場合
-                if UserMst.objects.filter( usrName = request.POST['chrName'], usrDelete = False ).first :
-                    if objuser.count() > 0 :
-                        blnerror    = True                      # パラメータ更新
+                # 顧客名重複チェック
+                if UserMst.objects.filter(usrName=request.POST['chrCustomer'], usrDelete=False).exclude(id=struserid).exists():
+                    blnerror = True
                     params['DuplicateError'] = blnerror
+                    return render(request, 'manage_customer.html', params)
 
-                    return render( request, 'manage_customer.html', params )
-                
-                # 入力されたログインIDが既に存在する場合
-                if UserMst.objects.filter( usrLoginID = request.POST['chrLoginID'],
-                                           usrDelete = False ).first()  :
-                    if objuser.count() > 0 :
-                        blnerror    = True  
-
-                    # パラメータ更新
+                # ログインID重複チェック
+                if UserMst.objects.filter(usrLoginID=request.POST['chrLoginID'], usrDelete=False).exclude(id=struserid).exists():
+                    blnerror = True
                     params['DuplicateError'] = blnerror
-                    return render( request, 'manage_customer.html', params )
-                
-                return render( request, 'manage_customer.html', params )
+                    return render(request, 'manage_customer.html', params)
+
+                # 入力に不備がない場合（保存処理は必要に応じて追加してください）
+                return render(request, 'manage_customer.html', params)
             
             # 削除ボタン押下時
             elif 'btnDelete' in request.POST:

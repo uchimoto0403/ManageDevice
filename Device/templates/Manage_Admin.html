@@ -67,10 +67,10 @@
         <tbody>
           {% for user in admins %}
           <tr>
-            <td>{{ admins.chrName }}</td>
-            <td>{{ admins.chrLoginID }}</td>
-            <td>{{ admins.chrPassWord }}</td>
-            <td>{{ admins.chrMail }}</td>
+            <td>{{ user.usrName }}</td>
+            <td>{{ user.usrLoginID }}</td>
+            <td>{{ user.usrPassWord }}</td>
+            <td>{{ user.usrMail }}</td>
             <td>
               <button type="submit" class="btn btn-sm btn-warning" name="btnEdit" value="{{ user.id }}" formnovalidate>編集</button>
             </td>
