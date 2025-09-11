@@ -66,13 +66,14 @@
         </thead>
         <tbody>
           {% for user in admins %}
-          <tr>
-            <td>{{ user.usrName }}</td>
-            <td>{{ user.usrLoginID }}</td>
-            <td>{{ user.usrPassWord }}</td>
-            <td>{{ user.usrMail }}</td>
+          <tr id="row-{{ user.id }}">
+            <td class="editable" data-field="usrName">{{ user.usrName }}</td>
+            <td class="editable" data-field="usrLoginID">{{ user.usrLoginID }}</td>
+            <td class="editable" data-field="usrPassWord">{{ user.usrPassWord }}</td>
+            <td class="editable" data-field="usrMail">{{ user.usrMail }}</td>
             <td>
-              <button type="submit" class="btn btn-sm btn-warning" name="btnEdit" value="{{ user.id }}" formnovalidate>編集</button>
+              <button type="button" class="btn btn-sm btn-warning edit-btn" data-id="{{ user.id }}">編集</button>
+              <button type="button" class="btn btn-sm btn-success save-btn d-none" data-id="{{ user.id }}">保存</button>
             </td>
             <td>
               <button type="submit" class="btn btn-sm btn-danger" name="btnDelete" value="{{ user.id }}" formnovalidate>削除</button>

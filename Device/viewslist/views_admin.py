@@ -85,7 +85,7 @@ def manage_admin(request, struserid ):
                                             ).first()
                 
                 # 入力に不備がある場合
-                if objuser is None :   
+                if objuser is not None :   
                     blnerror  = True  
 
                     # パラメータ更新
@@ -96,9 +96,9 @@ def manage_admin(request, struserid ):
                 # 入力された名前が既に存在する場合
                 objuser = UserMst.objects.filter( usrName    = request.POST[ 'chrName' ],
                                                   usrDelete  = False                            
-                                                ).first()   
-                if objuser.count() > 0 :
-                    blnerror_d  = True
+                                                ).exists()   
+                if objuser :
+                    blnerror_d = True
 
                     # パラメータ更新
                     params['DuplicateError'] = blnerror_d
@@ -107,8 +107,8 @@ def manage_admin(request, struserid ):
                 # 入力されたログインIDが既に存在する場合
                 objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
                                                   usrDelete  = False                            
-                                                ).first()
-                if objuser.count() > 0 :
+                                                ).exists()
+                if objuser:
                     blnerror_d  = True
 
                     # パラメータ更新
@@ -122,17 +122,15 @@ def manage_admin(request, struserid ):
 
                         # 管理者新規作成
                         objuser = UserMst()
-                    
-                    # 入力されたデータ登録
-                    objuser.usrName        = request.POST['chrName']
-                    objuser.usrLoginID     = request.POST['chrLoginID']
-                    objuser.usrPassWord    = request.POST['chrPassWord']
-                    objuser.usrMail        = request.POST['chrMail']
-                    objuser.usrKind        = 2
-                    objuser.usrDelete      = False
-                    objuser.save()
-                    strurl = reverse( 'manage_admin', kwargs = { 'struserid' : struserid } )
-                    return redirect( strurl )
+                        objuser.usrName        = request.POST['chrName']
+                        objuser.usrLoginID     = request.POST['chrLoginID']
+                        objuser.usrPassWord    = request.POST['chrPassWord']
+                        objuser.usrMail        = request.POST['chrMail']
+                        objuser.usrKind        = 2
+                        objuser.usrDelete      = False
+                        objuser.save()
+                        strurl = reverse( 'manage_admin', kwargs = { 'struserid' : struserid } )
+                        return redirect( strurl )
                 
             # 編集ボタン押下時
             elif 'btnEdit' in request.POST:
@@ -192,6 +190,7 @@ def manage_admin(request, struserid ):
                 else :
 
                     with transaction.atomic():
+                        objuser = UserMst.objects.get(id=request.POST['delete_id'])
                         objuser.usrDelete = True
                         objuser.save()
 
