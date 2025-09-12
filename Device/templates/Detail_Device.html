@@ -20,44 +20,49 @@
     </div>
   {% endif %}
 
-<div class="mb-3 col-4">
-    <label class="fw-bold col-8">機器名：</label>
-    <div>{{ device.dvcName }}</div>
+  <div class="row mb-3">
+    <label class="fw-bold col-3">機器名：</label>
+    <div class="col-9">{{ device.dvcName }}</div>
   </div>
 
-  <div class="mb-3 col-4">
-    <label class="fw-bold col-8">媒体：</label>
-    <div>{{ device.dvcKind }}</div>
+  <div class="row mb-3">
+    <label class="fw-bold col-3">媒体：</label>
+    <div class="col-9">{{ device.dvcKind }}</div>
   </div>
 
-  <div class="mb-3 col-4">
-    <label class="fw-bold col-8">メーカー：</label>
-    <div>{{ device.dvcMaker }}</div>
+  <div class="row mb-3">
+    <label class="fw-bold col-3">メーカー：</label>
+    <div class="col-9">{{ device.dvcMaker }}</div>
   </div>
 
-  <div class="mb-3 col-4">
-    <label class="fw-bold col-8">型番：</label>
-    <div>{{ device.dvcModel }}</div>
+  <div class="row mb-3">
+    <label class="fw-bold col-3">型番：</label>
+    <div class="col-9">{{ device.dvcModel }}</div>
   </div>
 
-  <div class="mb-3 col-4">
-    <label class="fw-bold col-8">購入日：</label>
-    <div>{{ device.dvcPurchase|date:"Y-m-d" }}</div>
+  <div class="row mb-3">
+    <label class="fw-bold col-3">購入日：</label>
+    <div class="col-9">{{ device.dvcPurchase|date:"Y-m-d" }}</div>
   </div>
 
-  <div class="mb-3 col-4">
-    <label class="fw-bold col-8">保証期限：</label>
-    <div>{{ device.dvcWarranty|date:"Y-m-d" }}</div>
+  <div class="row mb-3">
+    <label class="fw-bold col-3">保証期限：</label>
+    <div class="col-9">{{ device.dvcWarranty|date:"Y-m-d" }}</div>
   </div>
 
-  <div class="mb-3 col-4">
-    <label class="fw-bold col-8">使用者：</label>
-    <div>{{ device.dvcUser }}</div>
+  <div class="row mb-3">
+    <label class="fw-bold col-3">使用者：</label>
+    <div class="col-9">{{ device.dvcUser }}</div>
   </div>
 
-  <div class="mb-3 col-4">
-    <label class="fw-bold col-8">設置場所：</label>
-    <div>{{ device.dvcPlace }}</div>
+  <div class="row mb-3">
+    <label class="fw-bold col-3">設置場所：</label>
+    <div class="col-9">{{ device.dvcPlace }}</div>
+  </div>
+
+  <div class="row mb-3">
+    <label class="fw-bold col-3">備考欄：</label>
+    <div class="col-9" style="white-space: pre-wrap;">{{ device.dvcNotes }}</div>
   </div>
 
   {% if devicesofts %}

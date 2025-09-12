@@ -29,7 +29,7 @@ def home_customer(request, struserid):
         params = {
             'User'          : objuser,
             'devices'       : devices,
-   
+            'struserid'     : struserid,
         }
          
         # GET時処理

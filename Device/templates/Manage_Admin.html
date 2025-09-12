@@ -92,4 +92,66 @@
 <br>
 <br>
 <br>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // 編集ボタン押下
+  document.querySelectorAll(".edit-btn").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const rowId = this.dataset.id;
+      const row = document.querySelector("#row-" + rowId);
+
+      // 各セルを input に変換
+      row.querySelectorAll(".editable").forEach(function (cell) {
+        const value = cell.textContent.trim();
+        cell.innerHTML = `<input type="text" class="form-control" value="${value}" data-field="${cell.dataset.field}">`;
+      });
+
+      // ボタン切り替え
+      row.querySelector(".edit-btn").classList.add("d-none");
+      row.querySelector(".save-btn").classList.remove("d-none");
+    });
+  });
+
+  // 保存ボタン押下
+  document.querySelectorAll(".save-btn").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const rowId = this.dataset.id;
+      const row = document.querySelector("#row-" + rowId);
+
+      // 入力値を収集
+      const data = { id: rowId };
+      row.querySelectorAll("input").forEach(function (input) {
+        data[input.dataset.field] = input.value;
+      });
+
+      // Ajaxでサーバーに送信（DjangoビューにPOSTする）
+      fetch("{% url 'manage_admin' struserid=struserid %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({ action: "update", ...data }),
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          // 表示を更新
+          row.querySelectorAll(".editable").forEach(function (cell) {
+            const field = cell.querySelector("input").dataset.field;
+            const value = cell.querySelector("input").value;
+            cell.textContent = value;
+          });
+
+          // ボタン切り替え
+          row.querySelector(".edit-btn").classList.remove("d-none");
+          row.querySelector(".save-btn").classList.add("d-none");
+        } else {
+          alert("更新に失敗しました");
+        }
+      });
+    });
+  });
+});
+</script>
 {% endblock %}
