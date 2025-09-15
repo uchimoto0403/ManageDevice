@@ -61,37 +61,53 @@ def manage_device(request, struserid):
              
             # 検索ボタン押下時
             if 'btnSearch' in request.POST:
+                customer_id = request.POST.get('customer_id')
 
                 # 顧客を選択していない場合
-                if not objuser.usrCustomer:
+                if not customer_id:
 
-                    blnerror    = True  
-
-                    # パラメータ更新
-                    params['RequiredError'] = blnerror
-
-                    return render( request, 'manage.device.html', params )
-
-                # 選択した顧客の機器が登録されていない場合
-                elif not DeviceMst.objects.filter(dvcCustomer=objuser).exists():
-
-                    blnerror    = True  
+                    blnerror = True  
 
                     # パラメータ更新
                     params['RequiredError'] = blnerror
 
                     return render( request, 'manage.device.html', params )
-                
-                else :
-                    # 選択した顧客の機器情報を取得
-                    devices = DeviceMst.objects.filter(dvcCustomer=objuser)
-                    # リストに表示
-                    return render( request, 'manage.device.html', { 'User': objuser, 'Devices': devices } )
+             
+            # 顧客情報取得
+                customer = UserMst.objects.filter(id=customer_id, usrKind=1, usrDelete=False).first()
+                if not customer:
+                    blnerror = True
+                    params['RequiredError'] = blnerror
+                    return render(request, 'manage_device.html', params)
+
+                # 機器情報取得
+                devices = DeviceMst.objects.filter(dvcCustomer=customer, dvcDeleteFlag=False)
+
+                if not devices.exists():
+                    blnerror = True
+                    params['RequiredError'] = blnerror
+                    return render(request, 'manage_device.html', params)
+
+                # 顧客と機器リストを返す
+                params['Devices'] = devices
+                params['SelectedCustomer'] = customer
+                return render(request, 'manage_device.html', params)
 
             # ソフト確認ボタン押下時
-            if 'btnCheck' in request.POST:
+            if 'btnCheckSoftware' in request.POST:
+                device_id = request.POST.get('btnCheckSoftware')
+                device = DeviceMst.objects.get(id=device_id)
 
-                return render( request, 'manage.device.html', { 'User': objuser, 'Devices': devices } )
+                # ソフト一覧を取得
+                softwares = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
+
+                if not softwares.exists():
+                    params['error_software'] = True
+                else:
+                    params['devices'] = DeviceMst.objects.filter(dvcCustomer=device.dvcCustomer, dvcDeleteFlag=False)
+                    params['softwares'] = softwares
+                    params['selected_device'] = device
+                return render(request, 'manage_device.html', params) 
 
             # 編集ボタン押下時
             if 'btnEdit' in request.POST:
@@ -235,6 +251,10 @@ def detail_device(request, struserid, strdevid ):
         
         # POST時処理
         if request.method == 'POST':
+
+            # ソフト詳細ボタン押下時
+            if 'btnCheck' in request.POST:
+                return render( request, 'detail_device.html', params )
 
             # 戻るボタン押下時
             if 'btnBack' in request.POST:
