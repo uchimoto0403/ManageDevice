@@ -3,6 +3,9 @@ from django.urls import reverse
 from django.db import transaction
 from Device.formslist.forms_admin import AdminForm
 from Device.models import UserMst
+from django.http import JsonResponse
+import json
+import re
 import logging
 #------------------------------------------------------------------------------------------------#
 
@@ -12,6 +15,29 @@ import logging
 
 def manage_admin(request, struserid ):
     try:
+        # JSONリクエスト処理 (Ajax保存)
+        if request.method == "POST" and request.content_type == "application/json":
+            data = json.loads(request.body)
+            if data.get("action") == "update":
+                try:
+                    user = UserMst.objects.get(id=data.get("id"), usrKind=2, usrDelete=False)
+
+                    login_id = data.get("usrLoginID", user.usrLoginID)
+                    password = data.get("usrPassWord", user.usrPassWord)
+
+                    # 半角英数字チェック
+                    if not re.match(r'^[A-Za-z0-9]+$', login_id) or not re.match(r'^[A-Za-z0-9]+$', password):
+                        return JsonResponse({"success": False, "error": "ログインIDとパスワードは半角英数字のみです"})
+
+                    user.usrName = data.get("usrName", user.usrName)
+                    user.usrLoginID = login_id
+                    user.usrPassWord = password
+                    user.usrMail = data.get("usrMail", user.usrMail)
+                    user.save()
+                    return JsonResponse({"success": True})
+                except UserMst.DoesNotExist:
+                    return JsonResponse({"success": False, "error": "対象の管理者が見つかりません"})
+            return JsonResponse({"success": False, "error": "無効なアクション"})
             
         #不正アクセスが起きた場合
         objuser = UserMst.objects.filter( id = struserid )         
@@ -135,9 +161,9 @@ def manage_admin(request, struserid ):
             # 編集ボタン押下時
             elif 'btnEdit' in request.POST:
 
-                # 押下した顧客情報取得
-                objuser = UserMst.objects.get( id = struserid )
-                return render( request, 'manage_admin.html', params )
+                edit_id = request.POST.get('btnEdit')   # 編集対象の管理者ID
+                params['edit_id'] = int(edit_id)
+                return render(request, 'manage_admin.html', params)
         
             # 保存ボタン押下時
             elif 'btnSave' in request.POST:
@@ -183,6 +209,8 @@ def manage_admin(request, struserid ):
 
             # 削除ボタン押下時
             elif 'btnDelete' in request.POST:
+
+                delete_id = request.POST.get('btnDelete')
                 # 削除される管理者が1人だけの時
                 if UserMst.objects.filter( usrKind = 2, usrDelete = False ).count() <= 1 :
                     params['DeleteError'] = True
@@ -190,10 +218,13 @@ def manage_admin(request, struserid ):
                 else :
 
                     with transaction.atomic():
-                        objuser = UserMst.objects.get(id=request.POST['delete_id'])
-                        objuser.usrDelete = True
-                        objuser.save()
+                        user = UserMst.objects.get(id=delete_id, usrKind=2)
+                        user.usrDelete = True
+                        user.save()
 
+                admins = UserMst.objects.filter(usrKind=2, usrDelete=False)
+                params['admins'] = admins
+                
                 return render( request, 'manage_admin.html', params )
                 
             # 戻るボタン押下時

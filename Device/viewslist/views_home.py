@@ -25,11 +25,17 @@ def home_customer(request, struserid):
         objuser = UserMst.objects.get(id = struserid)
         devices = DeviceMst.objects.filter( dvcCustomer = objuser )  
 
+        # 画像があるかどうか判定
+        has_image = bool(objuser.usrDeviceMap)
+        image_url = objuser.usrDeviceMap.url if objuser.usrDeviceMap else None
+
         # 共通パラメータ定義
         params = {
             'User'          : objuser,
             'devices'       : devices,
             'struserid'     : struserid,
+            'has_image'     : has_image,
+            'image_url'     : image_url,
         }
          
         # GET時処理

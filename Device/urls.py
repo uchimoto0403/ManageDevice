@@ -1,5 +1,8 @@
 from django.urls import path
 from Device.viewslist import views_device, views_login, views_home, views_admin, views_customer
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
     #--- 申請一覧 ---#
     path('', views_login.login, name='login'),
@@ -21,3 +24,6 @@ urlpatterns = [
     path('manage_customer/<int:struserid>/', views_customer.manage_customer, name='manage_customer'),
 
 ] 
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
