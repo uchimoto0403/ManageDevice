@@ -93,6 +93,20 @@ def home_customer(request, struserid):
                     for col_offset, value in enumerate(values):
                         ws.cell(row=row_num, column=start_col + col_offset, value=value)
 
+                # ===== 自動列幅調整 =====
+                for col in ws.columns:
+                    max_length = 0
+                    col_letter = get_column_letter(col[0].column)
+                    for cell in col:
+                        try:
+                            if cell.value:
+                                max_length = max(max_length, len(str(cell.value)))
+                        except:
+                            pass
+                    adjusted_width = max_length + 2  # 余白を持たせる
+                    ws.column_dimensions[col_letter].width = adjusted_width
+
+
                 # HttpResponseを使用してExcelファイルを返す
                 from django.http import HttpResponse       
                 response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

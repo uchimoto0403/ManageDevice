@@ -183,7 +183,7 @@ class DeviceForm( forms.Form ):
                 } ), )
 
 # グラフィックカード
-    chrDeviceGraphicsCard = forms.CharField(
+    chrDeviceGraphic = forms.CharField(
         label = 'グラフィックカード',
         max_length = 30,
         required=False,

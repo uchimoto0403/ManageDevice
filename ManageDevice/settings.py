@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab'
     'Device'
+
 ]
 
 MIDDLEWARE = [
@@ -128,3 +130,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # アップロード設定
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+CRONJOBS = [
+    ('0 9 * * *', 'django.core.management.call_command', ['check_expiry']),
+    # 毎朝9時に実行
+]

@@ -19,7 +19,7 @@ urlpatterns = [
 
     path('create_device/<int:struserid>/', views_device.create_device, name='create_device'),
 
-    path('edit_device/<int:struserid>/', views_device.edit_device, name='edit_device'),
+    path('edit_device/<int:struserid>/<int:strdevid>/', views_device.edit_device, name='edit_device'),
 
     path('manage_customer/<int:struserid>/', views_customer.manage_customer, name='manage_customer'),
 
