@@ -160,6 +160,17 @@ def manage_device(request, struserid):
             
             # 出力ボタン押下時
             if 'btnOutput' in request.POST:
+                # どの顧客を出力するか取得（検索で選んだ顧客）
+                selected_customer_id = request.POST.get('selected_customer_id')
+
+                if not selected_customer_id:
+                    messages.error(request, "出力対象の顧客が選択されていません。先に顧客を検索してください。")
+                    return render(request, 'manage_device.html', params)
+
+                customer = UserMst.objects.filter(id=selected_customer_id, usrKind=1, usrDelete=False).first()
+                if not customer:
+                    messages.error(request, "出力対象の顧客が存在しません。")
+                    return render(request, 'manage_device.html', params)
                 # Excelファイル作成
                 wb = load_workbook(r"C:\Users\PC1-30_uchimoto\Desktop\Python 危機管理システム\05.コーディング\機器一覧出力_管理者用.xlsx")
                 ws = wb["Sheet1"]
@@ -167,7 +178,12 @@ def manage_device(request, struserid):
                 ws["G3"] = objuser.usrCustomer
                 
                 # 登録されている機器情報取得
-                devices = DeviceMst.objects.filter(dvcCustomer=objuser)
+                devices = DeviceMst.objects.filter(dvcCustomer=customer, dvcDeleteFlag=False).order_by('id')
+
+                    # もしデータが無ければメッセージを返す
+                if not devices.exists():
+                    messages.error(request, "該当顧客の機器データがありません。")
+                    return render(request, 'manage_device.html', params)
 
             # 開始位置を D7 に設定
                 start_row = 7
@@ -176,7 +192,7 @@ def manage_device(request, struserid):
                 for idx, device in enumerate(devices):
                     row_num = start_row + idx
 
-                    softwares = device.dvs_dvc_id.all()
+                    softwares = device.dvs_dvc_id.filter(dvsDeleteFlag=False)
                     sw_names = ", ".join([sw.dvsSoftName for sw in softwares]) if softwares else ""
                     sw_warranties = ", ".join([sw.dvsWarranty.strftime("%Y-%m-%d") for sw in softwares]) if softwares else ""
 

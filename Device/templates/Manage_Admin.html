@@ -17,6 +17,12 @@
       </div>
     {% endif %}
 
+    {% if DuplicateError %}
+      <div class="alert alert-danger text-center" role="alert">
+        ログインIDまたは名前が既に使用されています
+      </div>
+    {% endif %}
+
     <div class="container m-3">
       <div class="row mb-3">
         <label class="col-4 col-form-label text-end">名前：</label>
@@ -89,8 +95,10 @@ document.addEventListener("DOMContentLoaded", function () {
       // 他の行の削除ボタンを無効化
       document.querySelectorAll("button[name='btnDelete']").forEach(btn => btn.disabled = true);
       row.querySelector("button[name='btnDelete']").disabled = false;
-    
 
+      // 登録ボタンも無効化
+      document.querySelector("button[name='btnCreate']").disabled = true;
+    
       // 各セルを input に変換
       row.querySelectorAll(".editable").forEach(function (cell) {
         const value = cell.textContent.trim();
@@ -160,6 +168,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
           // 他の行の編集ボタンを有効化
           document.querySelectorAll(".edit-btn").forEach(btn => btn.disabled = false);
+          // 🔽 削除ボタンも有効化
+          document.querySelectorAll("button[name='btnDelete']").forEach(btn => btn.disabled = false);
+
         } else {
           alert("更新に失敗しました: " + (result.error || ""));
         }
