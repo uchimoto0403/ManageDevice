@@ -5,6 +5,7 @@ from Device.models import UserMst ,DeviceMst, DeviceSoftMst
 from Device.formslist.forms_device import DeviceForm
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
+from django.contrib import messages
 import logging
 #------------------------------------------------------------------------------------------------#
 
@@ -27,17 +28,24 @@ def manage_device(request, struserid):
             return redirect( strurl )
         
         
-        objuser = UserMst.objects.get(id=struserid)
+        objuser     = UserMst.objects.get(id=struserid)
+        customers   = UserMst.objects.filter(usrKind=1, usrDelete=False)
+        blnerror    = False
+        blnerror_c  = False
 
 
         # 共通パラメータ定義
         params = {
-            'User'          : objuser,
-            'struserid'     : struserid,            # ユーザーID
+            'User'                  : objuser,
+            'struserid'             : struserid,            # ユーザーID
+            'customers'             : customers,            # 顧客情報
+            'Required_error'        : blnerror,
            }
 
         # GET時処理
         if request.method == 'GET':
+
+            customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
 
             # 機器管理画面表示
             return render( request, 'manage_device.html', params ) 
@@ -54,47 +62,115 @@ def manage_device(request, struserid):
              
             # 検索ボタン押下時
             if 'btnSearch' in request.POST:
+                customer_id = request.POST.get('customer_id')
 
                 # 顧客を選択していない場合
-                if not objuser.usrCustomer:
-                    strurl = reverse( 'create_device', kwargs = { 'struserid' : objuser.id } )
-                    return redirect( strurl )
+                if not customer_id:
 
-                # 選択した顧客の機器が登録されていない場合
-                elif not DeviceMst.objects.filter(dvcCustomer=objuser).exists():
-                    strurl = reverse( 'create_device', kwargs = { 'struserid' : objuser.id } )
-                    return redirect( strurl )
-                
-                else :
-                    # 選択した顧客の機器情報を取得
-                    devices = DeviceMst.objects.filter(dvcCustomer=objuser)
-                    render( request, 'manage.device.html', { 'User': objuser, 'Devices': devices } )
+                    blnerror = True  
+
+                    # パラメータ更新
+                    params['RequiredError'] = blnerror
+
+                    return render( request, 'manage_device.html', params )
+             
+            # 顧客情報取得
+                customer = UserMst.objects.filter(id=customer_id, usrKind=1, usrDelete=False).first()
+                if not customer:
+                    blnerror = True
+                    params['RequiredError'] = blnerror
+                    return render(request, 'manage_device.html', params)
+
+                # 機器情報取得
+                devices = DeviceMst.objects.filter(dvcCustomer=customer, dvcDeleteFlag=False)
+                for device in devices:
+                    device.has_software = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False).exists()                
+
+                if not devices.exists():
+                    blnerror = True
+                    params['RequiredError'] = blnerror
+                    return render(request, 'manage_device.html', params)
+
+                # 顧客と機器リストを返す
+                params['Devices'] = devices
+                params['SelectedCustomer'] = customer
+                params['can_output'] = devices.exists()
+                return render(request, 'manage_device.html', params)
 
             # ソフト確認ボタン押下時
-            if 'btnCheck' in request.POST:
+            if 'btnCheckSoftware' in request.POST:
+                device_id = request.POST.get('btnCheckSoftware')
+                device = DeviceMst.objects.get(id=device_id)
 
-                return render( request, 'manage.device.html', { 'User': objuser, 'Devices': devices } )
+                # ソフト一覧を取得
+                softwares = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
+
+                customer = device.dvcCustomer
+
+                devices = DeviceMst.objects.filter(dvcCustomer=customer, dvcDeleteFlag=False)
+                for device in devices:
+                    device.has_software = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False).exists()
+
+                params['Devices'] = devices
+                params['softwares'] = softwares
+                params['selected_device'] = device
+                params['SelectedCustomer'] = customer 
+                params['open_modal'] = True
+                params['can_output'] = devices.exists()
+
+                if not softwares.exists():
+                    params['error_software'] = True
+                else:
+                    params['softwares'] = softwares
+
+                return render(request, 'manage_device.html', params) 
 
             # 編集ボタン押下時
             if 'btnEdit' in request.POST:
+                device_id = request.POST.get('btnEdit')
 
-                # redirect関数を使用し機器編集画面表示
-                strurl = reverse( 'edit_device', kwargs = { 'struserid' : objuser.id, 'intDvc' : device.id } )
-                return redirect( strurl )
+                # URLに必要なのは strdevid
+                strurl = reverse('edit_device', kwargs={'struserid': objuser.id, 'strdevid': device_id})
+                return redirect(strurl)
+
 
             # 削除ボタン押下時
             if 'btnDelete' in request.POST:
-                    # トランザクション設定
-                    with transaction.atomic():
+                device_id = request.POST.get('btnDelete')
 
-                        # 削除フラグをTrueにして保存
-                        objuser.usrDelete = True
-                        objuser.save()
+                with transaction.atomic():
+                    # 削除対象の機器を取得
+                    device = DeviceMst.objects.get(id=device_id)
 
-                    return render( request, 'Manage_Device.html', params )
+                    # 削除フラグを立てて保存
+                    device.dvcDeleteFlag = True
+                    device.save()
+
+                # 再検索してリスト更新（削除後にリストから消すため）
+                customer = device.dvcCustomer
+                devices = DeviceMst.objects.filter(dvcCustomer=customer, dvcDeleteFlag=False)
+                for d in devices:
+                    d.has_software = DeviceSoftMst.objects.filter(dvsDeviceID=d, dvsDeleteFlag=False).exists()
+
+                params['Devices'] = devices
+                params['SelectedCustomer'] = customer
+                params['can_output'] = devices.exists()
+
+                return render(request, 'manage_device.html', params)
             
             # 出力ボタン押下時
             if 'btnOutput' in request.POST:
+                # どの顧客を出力するか取得（検索で選んだ顧客）
+                selected_customer_id = request.POST.get('selected_customer_id')
+
+                if not selected_customer_id:
+                    messages.error(request, "出力対象の顧客が選択されていません。先に顧客を検索してください。")
+                    return render(request, 'manage_device.html', params)
+
+                customer = UserMst.objects.filter(id=selected_customer_id, usrKind=1, usrDelete=False).first()
+                if not customer:
+                    messages.error(request, "出力対象の顧客が存在しません。")
+                    return render(request, 'manage_device.html', params)
                 # Excelファイル作成
                 wb = load_workbook(r"C:\Users\PC1-30_uchimoto\Desktop\Python 危機管理システム\05.コーディング\機器一覧出力_管理者用.xlsx")
                 ws = wb["Sheet1"]
@@ -102,7 +178,12 @@ def manage_device(request, struserid):
                 ws["G3"] = objuser.usrCustomer
                 
                 # 登録されている機器情報取得
-                devices = DeviceMst.objects.filter(dvcCustomer=objuser)
+                devices = DeviceMst.objects.filter(dvcCustomer=customer, dvcDeleteFlag=False).order_by('id')
+
+                    # もしデータが無ければメッセージを返す
+                if not devices.exists():
+                    messages.error(request, "該当顧客の機器データがありません。")
+                    return render(request, 'manage_device.html', params)
 
             # 開始位置を D7 に設定
                 start_row = 7
@@ -111,7 +192,7 @@ def manage_device(request, struserid):
                 for idx, device in enumerate(devices):
                     row_num = start_row + idx
 
-                    softwares = device.dvs_dvc_id.all()
+                    softwares = device.dvs_dvc_id.filter(dvsDeleteFlag=False)
                     sw_names = ", ".join([sw.dvsSoftName for sw in softwares]) if softwares else ""
                     sw_warranties = ", ".join([sw.dvsWarranty.strftime("%Y-%m-%d") for sw in softwares]) if softwares else ""
 
@@ -141,6 +222,20 @@ def manage_device(request, struserid):
 
                     for col_offset, value in enumerate(values):
                         ws.cell(row=row_num, column=start_col + col_offset, value=value)
+
+                # ===== 自動列幅調整 =====
+                for col in ws.columns:
+                    max_length = 0
+                    col_letter = get_column_letter(col[0].column)
+                    for cell in col:
+                        try:
+                            if cell.value:
+                                max_length = max(max_length, len(str(cell.value)))
+                        except:
+                            pass
+                    adjusted_width = max_length + 2  # 余白を持たせる
+                    ws.column_dimensions[col_letter].width = adjusted_width
+
 
                 # HttpResponseを使用してExcelファイルを返す
                 from django.http import HttpResponse       
@@ -193,9 +288,11 @@ def detail_device(request, struserid, strdevid ):
             strurl = reverse( 'login' )
             return redirect( strurl )
         
+        params = {} 
+        
         # 引数で渡すものを指定
         objuser = UserMst.objects.get(id=struserid)
-        device  = DeviceMst.objects.filter( id = strdevid )
+        device  = DeviceMst.objects.get( id = strdevid )
         devicesofts = DeviceSoftMst.objects.filter(dvsDeviceID = device, dvsDeleteFlag=False )
 
         # 共通パラメータ定義
@@ -215,6 +312,10 @@ def detail_device(request, struserid, strdevid ):
         
         # POST時処理
         if request.method == 'POST':
+
+            # ソフト詳細ボタン押下時
+            if 'btnCheck' in request.POST:
+                return render( request, 'detail_device.html', params )
 
             # 戻るボタン押下時
             if 'btnBack' in request.POST:
@@ -247,385 +348,310 @@ def detail_device(request, struserid, strdevid ):
 # 引　数：リクエスト　ユーザーID
 # 戻り値：なし
 
-def create_device(request, struserid ):
-
+# 機器登録
+def create_device(request, struserid):
     try:
-            
-            #不正アクセスが起きた場合
-            objuser = UserMst.objects.filter(id=struserid)        
-            if objuser.count() <= 0 :
-                
-                # ログイン画面に移行
-                request.session.flush()
-                return redirect( 'login' )
-            
-            blnname         = True
-            blnerror        = False
-            blnerror_d      = False
-            
-            # 引数で渡すものを指定
-            objuser = UserMst.objects.get( id = struserid ) 
-            devices = DeviceMst.objects.filter( dvcCustomer = objuser, dvcDeleteFlag = False )
+        objuser = UserMst.objects.filter(id=struserid)
+        if not objuser.exists():
+            request.session.flush()
+            return redirect('login')
 
-            # 共通パラメータ定義
-            params = {
-                'User'                      : objuser,               # ユーザー情報
-                'Form'                      : DeviceForm(),          # フォーム設定
-                'AccountName'               : blnname,              # アカウント名入力
-                'RequiredError'             : blnerror,             # 入力値エラー表示
-                'DuplicateError'            : blnerror_d,           # 重複エラー表示 
-                'struserid'                 : struserid,            # ユーザーID     
-                }
-            
-            # GET時処理
-            if request.method == 'GET':
-    
-                # ホーム画面表示
-                return render( request, 'create_device.html', params )    
-            
-            # POST時処理
-            if request.method == 'POST':
-    
-                # 登録ボタン押下時
-                if 'btnCreate' in request.POST:
-    
-                    # 未入力がある場合
-                    if ( request.POST['chrDevice']  == ''):
-                        
-                        blnerror    = True
-    
-                        # パラメータ更新
-                        params['RequiredError'] = blnerror
-    
-                        return render( request, 'create_device.html', params )    
-    
-                    devices = None
-                    devices = UserMst.objects.filter( dvcName = request.POST['chrDevice'], dvcDelete = False ).first()
-                    
-                    # 入力に不備がある場合
-                    if objuser is None :   
-                        blnerror_d  = True  
-    
-                        # パラメータ更新
-                        params['DuplicateError'] = blnerror_d
-    
-                        return render( request, 'create_device.html', params )
-                    
-                    # 入力された機器名が既に存在する場合
+        objuser = objuser.first()
+        customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
+        temp_softs = request.session.get('temp_softs', [])
 
-                    devices = DeviceMst.objects.filter( devName    = request.POST[ 'chrDevice' ],
-                                                        devDelete  = False                            
-                                                    ).first()   
-                    if devices is not None :
-                        blnerror_d  = True
-                        # パラメータ更新
-                        params['DuplicateError'] = blnerror_d
-                        return render( request, 'create_device.html', params )                   
+        params = {
+            'User': objuser,
+            'Form': DeviceForm(),
+            'struserid': struserid,
+            'customers': customers,
+            'temp_softs': temp_softs,
+        }
 
-                    # 入力に不備がない場合
-                    else :
-                        
-                        # 入力されたデータ登録
-                        devices                 = DeviceMst()
-                        devices.dvcKind         = request.POST['chrKind']
-                        devices.dvcMaker        = request.POST['chrMaker']
-                        devices.dvcPurchase     = request.POST['chrPurchase']
-                        devices.dvcWarranty     = request.POST['chrWarranty']
-                        devices.dvcUser         = request.POST['chrUser']
-                        devices.dvcPlace        = request.POST['chrPlace']
-                        devices.dvcAssetnumber  = request.POST['chrAssetnumber']
-                        devices.dvcStatus       = request.POST['chrStatus']
-                        devices.dvcSerialnumber = request.POST['chrSerialnumber']
-                        devices.dvcOS           = request.POST['chrOS']
-                        devices.dvcCPU          = request.POST['chrCPU']
-                        devices.dvcRAM          = request.POST['chrRAM']
-                        devices.dvcGraphic      = request.POST['chrGraphic']
-                        devices.dvcStorage      = request.POST['chrStorage']
-                        devices.dvcIP           = request.POST['chrIP']
-                        devices.dvcNetWork      = request.POST['chrNetWork']
-                        devices.dvcNotes        = request.POST['chrNotes']
-                        devices.dvcDeleteFlag   = False
-                        devices.save()
-                        strurl = reverse( 'create_device', kwargs = { 'struserid' : struserid } )
+        if request.method == 'GET':
+            return render(request, 'create_device.html', params)
 
-                    return redirect( strurl )
-                
-                # ソフト登録ボタン押下時
-                if 'btnSoftCreate' in request.POST:
+        if request.method == 'POST':
+            # 機器登録
+            if 'btnCreate' in request.POST:
+                device_name = request.POST.get('chrDeviceName', '').strip()
+                customer_id = request.POST.get('intCustomer')
 
-                 # モーダル画面に移行
-                    return render( request, 'create_device.html', params )
+                if not device_name or not customer_id:
+                    messages.error(request, "機器名と顧客は必須です")
+                    return render(request, 'create_device.html', params)
 
-                # 新規登録ボタン押下時   
-                if 'btnCreateSoft' in request.POST:
+                customer = UserMst.objects.filter(id=customer_id, usrKind=1, usrDelete=False).first()
+                if not customer:
+                    messages.error(request, "顧客が存在しません")
+                    return render(request, 'create_device.html', params)
 
-                    # 入力内容に未入力があった場合
-                    if ( request.POST['chrSoftName']  == '' ):
-                        
-                        blnerror    = True
+                # 🔽 機器名の重複チェック
+                if DeviceMst.objects.filter(dvcCustomer=customer, dvcName=device_name, dvcDeleteFlag=False).exists():
+                    messages.error(request, f"顧客『{customer.usrCustomer}』には既に同じ機器名が登録されています")
+                    return render(request, 'create_device.html', params)
 
-                        # パラメータ更新
-                        params['RequiredError'] = blnerror
+                # 機器を保存
+                device = DeviceMst.objects.create(
+                    dvcName=device_name,
+                    dvcCustomer=customer,
+                    dvcKind=request.POST.get('chrDeviceKind', ''),
+                    dvcMaker=request.POST.get('chrDeviceMaker', ''),
+                    dvcModel=request.POST.get('chrDeviceModel', ''),
+                    dvcPurchase=request.POST.get('dtDevicePurchase') or None,
+                    dvcWarranty=request.POST.get('dtDeviceWarranty') or None,
+                    dvcUser=request.POST.get('chrDeviceUser', ''),
+                    dvcPlace=request.POST.get('chrDevicePlace', ''),
+                    dvcAssetnumber=request.POST.get('chrDeviceAssetNumber', ''),
+                    dvcStatus=request.POST.get('chrDeviceStatus', ''),
+                    dvcSerialnumber=request.POST.get('chrDeviceSerialNumber', ''),
+                    dvcOS=request.POST.get('chrDeviceOS', ''),
+                    dvcCPU=request.POST.get('chrDeviceCPU', ''),
+                    dvcRAM=request.POST.get('chrDeviceRAM', ''),
+                    dvcGraphic=request.POST.get('chrDeviceGraphic', ''),
+                    dvcStorage=request.POST.get('chrDeviceStorage', ''),
+                    dvcIP=request.POST.get('chrDeviceIP', ''),
+                    dvcNetWork=request.POST.get('chrDeviceNetwork', ''),
+                    dvcNotes=request.POST.get('chrNotes', ''),
+                    dvcDeleteFlag=False,
+                )
 
-                        return render( request, 'create_device.html', params )
-                    
+                # ソフト保存
+                for soft in temp_softs:
+                    DeviceSoftMst.objects.create(
+                        dvsDeviceID=device,
+                        dvsSoftName=soft['name'],
+                        dvsWarranty=soft['warranty'],
+                        dvsDeleteFlag=False
+                    )
+
+                request.session['temp_softs'] = []
+                messages.success(request, "機器とソフトを登録しました")
+                return redirect('create_device', struserid=struserid)
+
+
+            # ソフト追加（セッションに保存）
+            if 'btnAddSoftTemp' in request.POST:
+                name = request.POST.get('chrSoftName', '').strip()
+                warranty = request.POST.get('chrWarranty', '').strip()
+                if name and warranty:
+                    temp_softs.append({'name': name, 'warranty': warranty})
+                    request.session['temp_softs'] = temp_softs
+                    messages.success(request, f"ソフト '{name}' を追加しました")
+                else:
+                    messages.error(request, "ソフト名と保証期限を入力してください")
+
+                params['temp_softs'] = temp_softs
+                return render(request, 'create_device.html', params)
+
+            # ソフト編集
+            if 'btnUpdateSoftTemp' in request.POST:
+                index = int(request.POST.get('soft_index'))
+                new_name = request.POST.get('chrSoftName', '').strip()
+                new_warranty = request.POST.get('chrWarranty', '').strip()
+                if 0 <= index < len(temp_softs):
+                    if new_name and new_warranty:
+                        temp_softs[index]['name'] = new_name
+                        temp_softs[index]['warranty'] = new_warranty
+                        request.session['temp_softs'] = temp_softs
+                        messages.success(request, f"ソフトを更新しました")
                     else:
-                        # 入力されたデータ登録
-                        devicesoft = DeviceSoftMst()
-                        devicesoft.dvsDeviceID    = DeviceMst.objects.get( id = request.POST['intDvc'] )
-                        devicesoft.dvsSoftName    = request.POST['chrSoftName']
-                        devicesoft.dvsWarranty    = request.POST['chrWarranty']
-                        devicesoft.dvsDeleteFlag  = False
-                        devicesoft.save()
-                        
-                        return render( request, 'create_device.html', params )
+                        messages.error(request, "ソフト名と保証期限を入力してください")
 
-                # 編集ボタン押下時
-                elif 'btnEdit' in request.POST:
-                    # ソフト名が未入力の場合
-                    if ( request.POST['chrSoftName']  == '' ):
-                        
-                        blnerror    = True
+                params['temp_softs'] = temp_softs
+                return render(request, 'create_device.html', params)
 
-                        # パラメータ更新
-                        params['RequiredError'] = blnerror
+            # ソフト削除
+            if 'btnDeleteSoftTemp' in request.POST:
+                index = int(request.POST.get('soft_index'))
+                if 0 <= index < len(temp_softs):
+                    deleted = temp_softs.pop(index)
+                    request.session['temp_softs'] = temp_softs
+                    messages.success(request, f"ソフト '{deleted['name']}' を削除しました")
 
-                        return render( request, 'create_device.html', params )
-                    
-                    else :
-                        # 入力されたデータに更新
-                        devicesoft = DeviceSoftMst.objects.get( id = request.POST['intSoftID'] )
-                        devicesoft.dvsSoftName     = request.POST['chrSoftName']    
-                        devicesoft.dvsWarranty     = request.POST['chrWarranty']
-                        devicesoft.save()
-                        return render( request, 'create_device.html', params )
-
-                # 削除ボタン押下時
-                elif 'btnDelete' in request.POST:
-
-                    devicesoft = DeviceSoftMst.objects.get( id = request.POST['intSoftID'] )
-                    devicesoft.dvsDeleteFlag = True
-                    devicesoft.save()
-                    return render( request, 'create_device.html', params )
-
-                # 戻るボタン押下時
-                elif 'btnBack' in request.POST:
-
-                    # ホーム_管理者画面に移行
-                    strurl = reverse( 'manage_device', kwargs = { 'struserid' : struserid } )
-                    return redirect( strurl )
-                
-                # ログアウトボタン押下時
-                elif 'btnLogout' in request.POST:
-
-                    # ログイン画面に移行
-                    return redirect( 'login' )
-
-
-                    
+                params['temp_softs'] = temp_softs
+                return render(request, 'create_device.html', params)
+            
+            # 戻るボタン押下時
+            if 'btnBack' in request.POST:
+                strurl = reverse('manage_device', kwargs={'struserid': struserid})
+                request.session['temp_softs'] = []
+                return redirect(strurl)
+            # ログアウトボタン押下時
+            elif 'btnLogout' in request.POST:
+                request.session['temp_softs'] = []
+                return redirect('login')
+        
+        return render(request, 'create_device.html', params)
+            
     except:
-        # トレース設定
         import traceback
-
-        # ログ出力
         logger = logging.getLogger(__name__)
-        logger.error( request )
-        logger.error( traceback.format_exc() )  
-
-        # ログイン画面に移行
-        strurl = reverse( 'login' )
-        return redirect( strurl )        
+        logger.error(request)
+        logger.error(traceback.format_exc())
+        return redirect('login')
 
 # 機器編集
 # 引　数：リクエスト　ユーザーID　機器ID
 # 戻り値：なし
 
-def edit_device(request, struserid, strdevid ):
-
+def edit_device(request, struserid, strdevid):
     try:
-            
-        #不正アクセスが起きた場合
-        objuser = UserMst.objects.filter(id=struserid)        
-        if objuser.count() <= 0 :
-            
-            # ログイン画面に移行
+        # ユーザー認証チェック
+        objuser = UserMst.objects.filter(id=struserid)
+        if not objuser.exists():
             request.session.flush()
-            return redirect( 'login' )
-        
-        blnname         = True
-        blnerror        = False
-        blnerror_d      = False
-        
-        # 引数で渡すものを指定
-        objuser = UserMst.objects.filter( id = struserid ) 
-        devices = DeviceMst.objects.filter( usrID = objuser, dvcDeleteFlag = False )
+            return redirect('login')
 
-        # 共通パラメータ定義
+        objuser = objuser.first()
+        customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
+        device = DeviceMst.objects.get(id=strdevid, dvcDeleteFlag=False)
+        softwares = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
+
         params = {
-            'User'                      : objuser,               # ユーザー情報
-            'Form'                      : DeviceForm(),          # フォーム設定
-            'AccountName'               : blnname,              # アカウント名入力
-            'RequiredError'             : blnerror,             # 入力値エラー表示
-            'DuplicateError'            : blnerror_d,           # 重複エラー表示      
-            }
-        
-        # GET時処理
+            'User': objuser,
+            'Form': DeviceForm(initial={
+                'chrDeviceName': device.dvcName,
+                'chrDeviceKind': device.dvcKind,
+                'chrDeviceMaker': device.dvcMaker,
+                'chrDeviceModel': device.dvcModel,
+                'dtDevicePurchase': device.dvcPurchase,
+                'dtDeviceWarranty': device.dvcWarranty,
+                'chrDeviceUser': device.dvcUser,
+                'chrDevicePlace': device.dvcPlace,
+                'chrDeviceAssetNumber': device.dvcAssetnumber,
+                'chrDeviceStatus': device.dvcStatus,
+                'chrDeviceSerialNumber': device.dvcSerialnumber,
+                'chrDeviceOS': device.dvcOS,
+                'chrDeviceCPU': device.dvcCPU,
+                'chrDeviceRAM': device.dvcRAM,
+                'chrDeviceGraphic': device.dvcGraphic,
+                'chrDeviceStorage': device.dvcStorage,
+                'chrDeviceIP': device.dvcIP,
+                'chrDeviceNetwork': device.dvcNetWork,
+                'chrNotes': device.dvcNotes,
+            }),
+            'struserid': struserid,
+            'device': device,
+            'customers': customers,
+            'softwares': softwares,
+        }
+
+        # --- GET時 ---
         if request.method == 'GET':
+            return render(request, 'edit_device.html', params)
 
-            # ホーム画面表示
-            return render( request, 'Manage_Admin.html', params )    
-        
-        # POST時処理
+        # --- POST時 ---
         if request.method == 'POST':
+            # 機器更新
+            if 'btnUpdateDevice' in request.POST:
+                device_name = request.POST.get('chrDeviceName', '').strip()
+                customer_id = request.POST.get('intCustomer')
 
-            # 登録ボタン押下時
-            if 'btnCreate' in request.POST:
+                if not device_name or not customer_id:
+                    messages.error(request, "機器名と顧客は必須です")
+                    return render(request, 'edit_device.html', params)
 
-                # 未入力がある場合
-                if ( request.POST['chrLoginID']  == '' or 
-                    request.POST['chrPassWord']  == '' or
-                    request.POST['chrName']      == ''
-                ):
-                    
-                    blnerror    = True
-
-                    # パラメータ更新
-                    params['RequiredError'] = blnerror
-
-                    return render( request, 'Manage_Admin.html', params )    
-
-                objuser = None
-                objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
-                                                    usrPassWord = request.POST[ 'chrPassWord' ], 
-                                                    usrDelete   = False                            
-                                            ).first()
+                customer = UserMst.objects.filter(id=customer_id, usrKind=1, usrDelete=False).first()
+                if not customer:
+                    messages.error(request, "顧客が存在しません")
+                    return render(request, 'edit_device.html', params)
                 
-                # 入力に不備がある場合
-                if objuser is None :   
-                    blnerror_d  = True  
+                if DeviceMst.objects.filter(
+                    dvcCustomer=customer,
+                    dvcName=device_name,
+                    dvcDeleteFlag=False
+                ).exclude(id=device.id).exists():
+                    messages.error(request, f"顧客『{customer.usrCustomer}』には既に同じ機器名が登録されています")
+                    return render(request, 'edit_device.html', params)
 
-                    # パラメータ更新
-                    params['DuplicateError'] = blnerror_d
+                # 更新処理
+                device.dvcName = device_name
+                device.dvcCustomer = customer
+                device.dvcKind = request.POST.get('chrDeviceKind', '')
+                device.dvcMaker = request.POST.get('chrDeviceMaker', '')
+                device.dvcModel = request.POST.get('chrDeviceModel', '')
+                device.dvcPurchase = request.POST.get('dtDevicePurchase') or None
+                device.dvcWarranty = request.POST.get('dtDeviceWarranty') or None
+                device.dvcUser = request.POST.get('chrDeviceUser', '')
+                device.dvcPlace = request.POST.get('chrDevicePlace', '')
+                device.dvcAssetnumber = request.POST.get('chrDeviceAssetNumber', '')
+                device.dvcStatus = request.POST.get('chrDeviceStatus', '')
+                device.dvcSerialnumber = request.POST.get('chrDeviceSerialNumber', '')
+                device.dvcOS = request.POST.get('chrDeviceOS', '')
+                device.dvcCPU = request.POST.get('chrDeviceCPU', '')
+                device.dvcRAM = request.POST.get('chrDeviceRAM', '')
+                device.dvcGraphic = request.POST.get('chrDeviceGraphic', '')
+                device.dvcStorage = request.POST.get('chrDeviceStorage', '')
+                device.dvcIP = request.POST.get('chrDeviceIP', '')
+                device.dvcNetWork = request.POST.get('chrDeviceNetwork', '')
+                device.dvcNotes = request.POST.get('chrNotes', '')
+                device.save()
 
-                    return render( request, 'Manage_Admin.html', params )
-                
-                # 入力された機器名が既に存在する場合
+                messages.success(request, "機器情報を更新しました")
+                return redirect('edit_device', struserid=struserid, strdevid=device.id)
 
-                objuser = DeviceMst.objects.filter( devName    = request.POST[ 'chrName' ],
-                                                    devDelete  = False                            
-                                                ).first()   
-                if objuser is not None :
-                    blnerror_d  = True
-                    # パラメータ更新
-                    params['DuplicateError'] = blnerror_d
-                    return render( request, 'Manage_Admin.html', params )                   
-
-                # 入力に不備がない場合
-                else :
-                    
-                    # 入力されたデータ登録
-                    devices = DeviceMst()
-                    devices.dvcKind         = request.POST['chrKind']
-                    devices.dvcMaker        = request.POST['chrMaker']
-                    devices.dvcPurchase     = request.POST['chrPurchase']
-                    devices.dvcWarranty     = request.POST['chrWarranty']
-                    devices.dvcUser         = request.POST['chrUser']
-                    devices.dvcPlace        = request.POST['chrPlace']
-                    devices.dvcAssetnumber  = request.POST['chrAssetnumber']
-                    devices.dvcStatus       = request.POST['chrStatus']
-                    devices.dvcSerialnumber = request.POST['chrSerialnumber']
-                    devices.dvcOS           = request.POST['chrOS']
-                    devices.dvcCPU          = request.POST['chrCPU']
-                    devices.dvcRAM          = request.POST['chrRAM']
-                    devices.dvcGraphic      = request.POST['chrGraphic']
-                    devices.dvcStorage      = request.POST['chrStorage']
-                    devices.dvcIP           = request.POST['chrIP']
-                    devices.dvcNetWork      = request.POST['chrNetWork']
-                    devices.dvcNotes        = request.POST['chrNotes']
-                    devices.save()
-                    strurl = reverse( 'create_device', kwargs = { 'struserid' : struserid } )
-
-                return redirect( strurl )
-            
-            # ソフト登録ボタン押下時
-            if 'btnEdit' in request.POST:
-                
-                # モーダル画面表示
-                return render( request, 'Manage_Admin.html', params )
-            
-            # 新規登録ボタン押下時   
-            if 'btnCreateSoft' in request.POST:
-
-                # 入力内容に未入力があった場合
-                if ( request.POST['chrSoftName']  == '' ):
-                    
-                    blnerror    = True
-
-                    # パラメータ更新
-                    params['RequiredError'] = blnerror
-
-                    return render( request, 'create_device.html', params )
-                
+            # ソフト追加
+            if 'btnAddSoft' in request.POST:
+                soft_name = request.POST.get('chrSoftName', '').strip()
+                warranty = request.POST.get('chrWarranty', '').strip()
+                if soft_name and warranty:
+                    DeviceSoftMst.objects.create(
+                        dvsDeviceID=device,
+                        dvsSoftName=soft_name,
+                        dvsWarranty=warranty,
+                        dvsDeleteFlag=False
+                    )
+                    messages.success(request, f"ソフト '{soft_name}' を追加しました")
                 else:
-                    # 入力されたデータ登録
-                    devicesoft = DeviceSoftMst()
-                    devicesoft.dvsDeviceID    = DeviceMst.objects.get( id = request.POST['intDvc'] )
-                    devicesoft.dvsSoftName    = request.POST['chrSoftName']
-                    devicesoft.dvsWarranty    = request.POST['chrWarranty']
-                    devicesoft.dvsDeleteFlag  = False
-                    devicesoft.save()
-                    
-                    return render( request, 'create_device.html', params )
+                    messages.error(request, "ソフト名と保証期限は必須です")
 
-            # 編集ボタン押下時
-            elif 'btnEdit' in request.POST:
-                # ソフト名が未入力の場合
-                if ( request.POST['chrSoftName']  == '' ):
-                    
-                    blnerror    = True
+                # 再取得して反映
+                params['softwares'] = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
+                return render(request, 'edit_device.html', params)
 
-                    # パラメータ更新
-                    params['RequiredError'] = blnerror
+            # ソフト編集
+            if 'btnEditSoft' in request.POST:
+                soft_id = request.POST.get('intSoftID')
+                new_name = request.POST.get('chrSoftName', '').strip()
+                new_warranty = request.POST.get('chrWarranty', '').strip()
+                soft = DeviceSoftMst.objects.get(id=soft_id, dvsDeviceID=device)
+                if new_name and new_warranty:
+                    soft.dvsSoftName = new_name
+                    soft.dvsWarranty = new_warranty
+                    soft.save()
+                    messages.success(request, f"ソフト '{new_name}' を更新しました")
+                else:
+                    messages.error(request, "ソフト名と保証期限は必須です")
 
-                    return render( request, 'create_device.html', params )
-                
-                else :
-                    # 入力されたデータに更新
-                    devicesoft = DeviceSoftMst.objects.get( id = request.POST['intSoftID'] )
-                    devicesoft.dvsSoftName     = request.POST['chrSoftName']    
-                    devicesoft.dvsWarranty     = request.POST['chrWarranty']
-                    devicesoft.save()
-                    return render( request, 'create_device.html', params )
+                params['softwares'] = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
+                return render(request, 'edit_device.html', params)
 
-            # 削除ボタン押下時
-            elif 'btnDelete' in request.POST:
+            # ソフト削除
+            if 'btnDeleteSoft' in request.POST:
+                soft_id = request.POST.get('intSoftID')
+                soft = DeviceSoftMst.objects.get(id=soft_id, dvsDeviceID=device)
+                soft.dvsDeleteFlag = True
+                soft.save()
+                messages.success(request, f"ソフト '{soft.dvsSoftName}' を削除しました")
 
-                devicesoft = DeviceSoftMst.objects.get( id = request.POST['intSoftID'] )
-                devicesoft.dvsDeleteFlag = True
-                devicesoft.save()
-                return render( request, 'create_device.html', params )
+                params['softwares'] = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
+                return render(request, 'edit_device.html', params)
 
-            # 戻るボタン押下時
-            elif 'btnBack' in request.POST:
+            # 戻る
+            if 'btnBack' in request.POST:
+                strurl = reverse('manage_device', kwargs={'struserid': struserid})
+                return redirect(strurl)
 
-                # ホーム_管理者画面に移行
-                strurl = reverse( 'manage_device', kwargs = { 'struserid' : struserid } )
-                return redirect( strurl )
-            
-            # ログアウトボタン押下時
-            elif 'btnLogout' in request.POST:
+            # ログアウト
+            if 'btnLogout' in request.POST:
+                return redirect('login')
 
-                # ログイン画面に移行
-                return redirect( 'login' )
-
-
+        return render(request, 'edit_device.html', params)
 
     except:
-        # トレース設定
         import traceback
-
-        # ログ出力
         logger = logging.getLogger(__name__)
-        logger.error( request )
-        logger.error( traceback.format_exc() )               
-        
+        logger.error(request)
+        logger.error(traceback.format_exc())
+        return redirect('login')

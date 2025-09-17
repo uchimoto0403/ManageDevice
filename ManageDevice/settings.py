@@ -1,3 +1,4 @@
+
 """
 Django settings for ManageDevice project.
 
@@ -24,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-4b4j69ym4!sxl)re3cn5ygby^246n!#wob#%=02y(18hl@f0!k'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Device'
+
 ]
 
 MIDDLEWARE = [
@@ -56,7 +58,7 @@ ROOT_URLCONF = 'ManageDevice.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'Device/templates/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,7 +80,7 @@ WSGI_APPLICATION = 'ManageDevice.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',        
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -105,9 +107,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ja'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tokyo'
 
 USE_I18N = True
 
@@ -117,13 +119,47 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",   # プロジェクト直下の static を使う
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_URL = '/'
+SECURE_SSL_REDIRECT = False
+CSRF_TRUSTED_ORIGINS = ['https://view-net.com']
+
 # アップロード設定
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+CRONJOBS = [
+    ('0 9 * * *', 'django.core.management.call_command', ['check_expiry']),
+    # 毎朝9時に実行
+]
+
+
+
+# メール送信設定
+# DEFAULT_FROM_EMAIL = 'nvs_info@view-s.co.jp'
+DEFAULT_FROM_EMAIL = 'uchimoto@view-s.co.jp'
+
+# メール送信設定
+# EMAIL_Host = 'localhost'
+# EMAIL_PORT = 1025
+# Debug用設定
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_HOST = 'view-s.co.jp'
+EMAIL_PORT = 587
+
+# DEFAULT_FROM_EMAILと同じものを使用する
+# EMAIL_HOST_USER = 'nvs_info@view-s.co.jp'
+# EMAIL_HOST_PASSWORD = 'm6iVeTWX'
+EMAIL_HOST_USER = 'uchimoto@view-s.co.jp'
+EMAIL_HOST_PASSWORD = 'Dns9xcV8'
