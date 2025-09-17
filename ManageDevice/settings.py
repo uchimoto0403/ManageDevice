@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_crontab',
     'Device'
 
 ]
@@ -151,19 +150,19 @@ LOGGING = {
         'info_file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/info.log'),
+            'filename': os.path.join(BASE_DIR, 'logs/info.log'),
             'formatter': 'verbose',
         },
         'warning_file': {
             'level': 'WARNING',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/warning.log'),
+            'filename': os.path.join(BASE_DIR, 'logs/warning.log'),
             'formatter': 'verbose',
         },
         'error_file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'log/error.log'),
+            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
             'formatter': 'verbose',
         },
     },
@@ -174,5 +173,10 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-    },
+        'django.request': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    }
 }
