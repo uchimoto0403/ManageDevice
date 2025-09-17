@@ -1,4 +1,3 @@
-
 """
 Django settings for ManageDevice project.
 
@@ -27,7 +26,7 @@ SECRET_KEY = 'django-insecure-4b4j69ym4!sxl)re3cn5ygby^246n!#wob#%=02y(18hl@f0!k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -40,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Device'
-
 ]
 
 MIDDLEWARE = [
@@ -128,9 +126,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # アップロード設定
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-CRONJOBS = [
-    ('0 9 * * *', 'django.core.management.call_command', ['check_expiry']),
-    # 毎朝9時に実行
-]
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

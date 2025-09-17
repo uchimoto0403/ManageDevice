@@ -2,114 +2,117 @@
 {% load static %}
 {% block content %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
-      rel="stylesheet" crossorigin="anonymous">
+      rel="stylesheet" 
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+      crossorigin="anonymous">
 
 <div class="d-flex align-items-center justify-content-center ">
-  <form action="{% url 'detail_device' struserid=struserid strdevid=strdevid %}" method="post" style="min-width: 400px;">
+  <form action="{% url 'detail_device' struserid=struserid strdevid=strdevid  %}" method="post"  style="min-width: 400px;">
     {% csrf_token %}
     
     <div class="fs-4 text-center mb-4">
       <h1>詳細</h1>
     </div>
 
-    {% if not devicesofts %}
-      <div class="alert alert-danger text-center">
-        ソフトが登録されていません
-      </div>
-    {% endif %}
-
-    <div class="row mb-3">
-      <label class="fw-bold col-3">機器名：</label>
-      <div class="col-9">{{ device.dvcName }}</div>
+  {% if not softwares %}
+    <div class="alert alert-danger text-center">
+      ソフトが登録されていません
     </div>
+  {% endif %}
 
-    <div class="row mb-3">
-      <label class="fw-bold col-3">媒体：</label>
-      <div class="col-9">{{ device.dvcKind }}</div>
-    </div>
+<div class="mb-3 col-4">
+    <label class="fw-bold col-8">機器名：</label>
+    <div>{{ device.dvcName }}</div>
+  </div>
 
-    <div class="row mb-3">
-      <label class="fw-bold col-3">メーカー：</label>
-      <div class="col-9">{{ device.dvcMaker }}</div>
-    </div>
+  <div class="mb-3 col-4">
+    <label class="fw-bold col-8">媒体：</label>
+    <div>{{ device.dvcKind }}</div>
+  </div>
 
-    <div class="row mb-3">
-      <label class="fw-bold col-3">型番：</label>
-      <div class="col-9">{{ device.dvcModel }}</div>
-    </div>
+  <div class="mb-3 col-4">
+    <label class="fw-bold col-8">メーカー：</label>
+    <div>{{ device.dvcMaker }}</div>
+  </div>
 
-    <div class="row mb-3">
-      <label class="fw-bold col-3">購入日：</label>
-      <div class="col-9">{{ device.dvcPurchase|date:"Y-m-d" }}</div>
-    </div>
+  <div class="mb-3 col-4">
+    <label class="fw-bold col-8">型番：</label>
+    <div>{{ device.dvcModel }}</div>
+  </div>
 
-    <div class="row mb-3">
-      <label class="fw-bold col-3">保証期限：</label>
-      <div class="col-9">{{ device.dvcWarranty|date:"Y-m-d" }}</div>
-    </div>
+  <div class="mb-3 col-4">
+    <label class="fw-bold col-8">購入日：</label>
+    <div>{{ device.dvcPurchase|date:"Y-m-d" }}</div>
+  </div>
 
-    <div class="row mb-3">
-      <label class="fw-bold col-3">使用者：</label>
-      <div class="col-9">{{ device.dvcUser }}</div>
-    </div>
+  <div class="mb-3 col-4">
+    <label class="fw-bold col-8">保証期限：</label>
+    <div>{{ device.dvcWarranty|date:"Y-m-d" }}</div>
+  </div>
 
-    <div class="row mb-3">
-      <label class="fw-bold col-3">設置場所：</label>
-      <div class="col-9">{{ device.dvcPlace }}</div>
-    </div>
+  <div class="mb-3 col-4">
+    <label class="fw-bold col-8">使用者：</label>
+    <div>{{ device.dvcUser }}</div>
+  </div>
 
-    {% if devicesofts %}
-      <!-- モーダルを開くボタン -->
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#softModal">
-        ソフト詳細
-      </button>
-    {% endif %}
+  <div class="mb-3 col-4">
+    <label class="fw-bold col-8">設置場所：</label>
+    <div>{{ device.dvcPlace }}</div>
+  </div>
 
-    <div class="mb-3 col-4">
-      <label class="fw-bold col-8">備考欄：</label>
-      <div style="white-space: pre-wrap;">{{ device.dvcNotes }}</div>
-    </div>
+  {% if device.softwares.exists %}
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#softModal">
+    ソフト詳細
+  </button>
+  {% endif %}
 
-    <!-- モーダル -->
-    <div class="modal fade" id="softModal" tabindex="-1" aria-labelledby="softModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="softModalLabel">ソフト一覧</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
-          </div>
-          <div class="modal-body">
-            <table class="table table-bordered table-striped">
-              <thead>
-                <tr>
-                  <th>ソフト名</th>
-                  <th>保証期限</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for soft in devicesofts %}
-                <tr>
-                  <td>{{ soft.dvsSoftName }}</td>
-                  <td>{{ soft.dvsWarranty|date:"Y-m-d" }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="2">ソフトは登録されていません</td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-          </div>
+  <div class="mb-3 col-4">
+    <label class="fw-bold col-8">備考欄：</label>
+    <div style="white-space: pre-wrap;">{{ device.dvcNotes }}</div>
+  </div>
+
+  <div class="modal fade" id="softModal" tabindex="-1" aria-labelledby="softModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="softModalLabel">ソフト一覧</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>ソフト名</th>
+                <th>保証期限</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for soft in devicesofts %}
+              <tr>
+                <td>{{ soft.dvsSoftName }}</td>
+                <td>{{ soft.dvsWarranty }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="2">ソフトは登録されていません</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <button class="btn btn-secondary w-100 mb-3" type="submit" name="btnBack">戻る</button>
+<button class="btn btn-danger w-100 mb-3" type="submit" name="btnBack">戻る</button>
+
     <button class="btn btn-danger w-100" type="submit" name="btnLogout">ログアウト</button>
   </form>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-
+<br>    
+<br>
+<br>
+<br>
+<br>
 {% endblock %}

@@ -1,5 +1,4 @@
 from django import forms
-from Device.models import UserMst
 
 #------------------------------------------------------------------------------------------------#
 
@@ -17,19 +16,6 @@ class DeviceForm( forms.Form ):
                 'placeholder': '機器名は入力必須です' } ),
         required = True )
     
-    # 顧客名（必須：顧客のみを対象にする）
-    chrDeviceCustomer = forms.ModelChoiceField(
-        label="顧客名",
-        queryset=UserMst.objects.filter(usrKind=1, usrDelete=False),
-        required=True,
-        widget=forms.Select(
-            attrs={
-                'class': 'form-control',
-                'style': 'width:80%',
-            }
-        )
-    )
-    
     DEVICE_KIND_CHOICES = [
         ('', '---選択してください---'),
         ('desktop', 'デスクトップPC'),
@@ -42,7 +28,6 @@ class DeviceForm( forms.Form ):
     chrDeviceKind = forms.ChoiceField(
         label = '種類',
         choices=DEVICE_KIND_CHOICES,
-        required=False,
         widget=forms.Select(
             attrs={
                 'class': 'form-control',
@@ -53,26 +38,12 @@ class DeviceForm( forms.Form ):
 # メーカー
     chrDeviceMaker = forms.CharField(  
         label = 'メーカー',
-        max_length = 30,
-        required=False,
-                widget = forms.TextInput(
-            attrs = {
-                'class': 'form-control',
-                'style': 'width:80% ',
-                } ), )
+        max_length = 30)
     
 # 型番
     chrDeviceModel = forms.CharField(
         label = '型番',
-        max_length = 30,
-        required=False,
-                widget = forms.TextInput(
-            attrs = {
-                'class': 'form-control',
-                'style': 'width:80% ',
-                } ), )
-        
-    
+        max_length = 30)
     
 # 購入日
     dtDevicePurchase = forms.DateField( 
@@ -98,7 +69,6 @@ class DeviceForm( forms.Form ):
     chrDeviceUser = forms.CharField(
         label = '使用者',
         max_length = 15,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -109,7 +79,6 @@ class DeviceForm( forms.Form ):
     chrDevicePlace = forms.CharField(
         label = '設置場所',
         max_length = 30,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -120,7 +89,6 @@ class DeviceForm( forms.Form ):
     chrDeviceAssetNumber = forms.CharField(
         label = '資産番号',
         max_length = 30,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -131,7 +99,6 @@ class DeviceForm( forms.Form ):
     chrDeviceStatus = forms.CharField(
         label = '使用可否',
         max_length = 15,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -142,7 +109,6 @@ class DeviceForm( forms.Form ):
     chrDeviceSerialNumber = forms.CharField(
         label = 'シリアル番号',
         max_length = 30,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -153,7 +119,6 @@ class DeviceForm( forms.Form ):
     chrDeviceOS = forms.CharField(
         label = 'OS',
         max_length = 15,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -164,7 +129,6 @@ class DeviceForm( forms.Form ):
     chrDeviceCPU = forms.CharField(
         label = 'CPU',
         max_length = 15,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -175,7 +139,6 @@ class DeviceForm( forms.Form ):
     chrDeviceRAM = forms.CharField(
         label = 'RAM',
         max_length = 15,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -183,10 +146,9 @@ class DeviceForm( forms.Form ):
                 } ), )
 
 # グラフィックカード
-    chrDeviceGraphic = forms.CharField(
+    chrDeviceGraphicsCard = forms.CharField(
         label = 'グラフィックカード',
         max_length = 30,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -197,7 +159,6 @@ class DeviceForm( forms.Form ):
     chrDeviceStorage = forms.CharField(
         label = 'ストレージ',
         max_length = 30,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -208,7 +169,6 @@ class DeviceForm( forms.Form ):
     chrDeviceIP = forms.CharField(
         label = 'IPアドレス',
         max_length = 15,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -219,7 +179,6 @@ class DeviceForm( forms.Form ):
     chrDeviceNetwork = forms.CharField(
         label = 'ネットワーク',
         max_length = 30,
-        required=False,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',
@@ -230,7 +189,6 @@ class DeviceForm( forms.Form ):
     chrNotes = forms.CharField(
         label = '備考欄',
         max_length = 100,
-        required=False,
         widget = forms.Textarea(
             attrs = {
                 'class': 'form-control',

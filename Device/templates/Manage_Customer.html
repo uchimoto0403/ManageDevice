@@ -2,205 +2,103 @@
 {% load static %}
 {% block content %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
-      rel="stylesheet" crossorigin="anonymous">
+      rel="stylesheet" 
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+      crossorigin="anonymous">
 
 <div class="d-flex align-items-center justify-content-center ">
-  <!-- 登録フォーム -->
-  <form action="{% url 'manage_customer' struserid=struserid %}" method="post" enctype="multipart/form-data" style="min-width: 400px;">
+  <form action="{% url 'manage_customer' struserid=struserid %}" method="post"  style="min-width: 400px;">
     {% csrf_token %}
+    
     <div class="fs-4 text-center mb-4">
       <h1>顧客管理</h1>
     </div>
 
-    <!-- エラーメッセージ -->
-    {% if DuplicateError %}
-      <div class="alert alert-danger" role="alert">顧客名またはログインIDが重複しています。</div>
-    {% endif %}
-    {% if Error %}
-      <div class="alert alert-danger" role="alert">入力されていない項目があります。</div>
-    {% endif %}
-    {% if Create %}
-      <div class="alert alert-primary" role="alert">顧客を登録しました。</div>
-    {% endif %}
+    <div class="container m-3">
 
-    <!-- 入力フォーム -->
     <div class="row mb-3">
       <label class="col-4 col-form-label text-end">顧客名：</label>
-      <div class="col-8">{{ Form.chrCustomer }}</div>
+      <div class="col-8">
+        {{ Form.chrCustomer }}
+      </div>
     </div>
+
     <div class="row mb-3">
       <label class="col-4 col-form-label text-end">ログインID：</label>
-      <div class="col-8">{{ Form.chrLoginID }}</div>
+      <div class="col-8">
+        {{ Form.chrLoginID }}
+      </div>
     </div>
+
     <div class="row mb-3">
       <label class="col-4 col-form-label text-end">パスワード：</label>
-      <div class="col-8">{{ Form.chrPassWord }}</div>
+      <div class="col-8">
+        {{ Form.chrPassWord }}
+      </div>
     </div>
+
+
     <div class="row mb-3">
       <label class="col-4 col-form-label text-end">機器配置図：</label>
       <div class="col-8">
-        <input type="file" class="form-control" name="device_map" accept=".png,.jpg,.jpeg,image/png,image/jpeg">
+  <input type="file" class="form-control" name="device_map" accept=".png,.jpg,.jpeg,image/png,image/jpeg">
       </div>
     </div>
 
-    <!-- 登録ボタン -->
-    <button class="btn btn-primary w-100 mb-3"
-            type="submit" name="btnCreate"
-            {% if editing_id %}disabled{% endif %}>
-      登録
-    </button>
-  </form>
-</div>
+    <button class="btn btn-primary w-100 mb-3" type="submit" name="btnCreate">登録</button>
 
-<!-- 顧客リスト -->
-<div class="container mt-4">
-  <table class="table table-bordered table-striped text-center">
-    <thead>
-      <tr>
-        <th>名前</th>
-        <th>ログインID</th>
-        <th>パスワード</th>
-        <th>機器配置図</th>
-        <th>機器配置図確認</th>
-        <th>編集</th>
-        <th>削除</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in customers %}
-      <tr>
-        <!-- 行ごとに独立したフォーム -->
-        <form action="{% url 'manage_customer' struserid=struserid %}" method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          <input type="hidden" name="user_id" value="{{ user.id }}">
+    <div class="container mt-4">
+      <table class="table table-bordered table-striped text-center">
+        <thead>
+          <tr>
+            <th>名前</th>
+            <th>ログインID</th>
+            <th>パスワード</th>
+            <th>機器配置図</th>
+            <th>機器配置図確認</th>
+            <th>編集</th>
+            <th>削除</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in customers %}
+          <tr>
+            <td>{{ customers.chrName }}</td>
+            <td>{{ customers.chrLoginID }}</td>
+            <td>****</td> 
+            <td>
+              <button class="btn btn-primary w-100 mb-3" type="submit" name="btnUpload" formnovalidate>アップロード</button>
+            </td>
+            <td>
+              <button class="btn btn-primary w-100 mb-3" type="submit" name="btnCheck" formnovalidate>確認</button>
+            </td>
+            <td>
+              <a href="#" class="btn btn-sm btn-primary">編集</a>
+            </td>
+            <td>
+              <button type="button" class="btn btn-sm btn-danger">削除</button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6">顧客は登録されていません</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
 
-          <!-- 名前 -->
-          <td>
-            {% if editing_id == user.id %}
-              <input type="text" name="chrCustomer" class="form-control" value="{{ user.usrName }}" required>
-            {% else %}
-              {{ user.usrName }}
-            {% endif %}
-          </td>
-
-          <!-- ログインID -->
-          <td>
-            {% if editing_id == user.id %}
-              <input type="text" name="chrLoginID" class="form-control"
-                     value="{{ user.usrLoginID }}"
-                     pattern="[A-Za-z0-9]+"
-                     title="半角英数字のみ入力してください"
-                     required>
-            {% else %}
-              {{ user.usrLoginID }}
-            {% endif %}
-          </td>
-
-          <!-- パスワード -->
-          <td>
-            {% if editing_id == user.id %}
-              <input type="password" name="chrPassWord" class="form-control"
-                     value="{{ user.usrPassWord }}"
-                     pattern="[A-Za-z0-9]+"
-                     title="半角英数字のみ入力してください"
-                     required>
-            {% else %}
-              ****
-            {% endif %}
-          </td>
-
-          <!-- アップロード -->
-        <td>
-          {% if editing_id == user.id %}
-            <!-- 非表示のファイル入力 -->
-            <input type="file" id="fileInput_{{ user.id }}"
-                  name="device_map_{{ user.id }}"
-                  class="d-none"
-                  accept=".png,.jpg,.jpeg"
-                  onchange="document.getElementById('formUpload_{{ user.id }}').submit();">
-
-            <!-- アップロード専用ボタン -->
-            <button type="button"
-                    class="btn btn-primary btn-sm mt-2"
-                    onclick="document.getElementById('fileInput_{{ user.id }}').click();">
-              アップロード
-            </button>
-          {% else %}
-            <button class="btn btn-secondary btn-sm mt-2" type="button" disabled>アップロード</button>
-          {% endif %}
-        </td>
-
-          <!-- 確認 -->
-          <td>
-            <button class="btn btn-info btn-sm"
-                    type="submit"
-                    name="btnCheck"
-                    value="{{ user.id }}"
-                    {% if not user.usrDeviceMap or editing_id %}disabled{% endif %}>
-              確認
-            </button>
-          </td>
-
-          <!-- 編集 / 保存 -->
-          <td>
-            {% if editing_id == user.id %}
-              <button class="btn btn-success btn-sm" type="submit" name="btnSave" value="{{ user.id }}">保存</button>
-            {% else %}
-              <button class="btn btn-primary btn-sm" type="submit" name="btnEdit" value="{{ user.id }}"
-                      {% if editing_id %}disabled{% endif %}>
-                編集
-              </button>
-            {% endif %}
-          </td>
-
-          <!-- 削除 -->
-          <td>
-            <button class="btn btn-danger btn-sm" type="submit" name="btnDelete" value="{{ user.id }}"
-                    {% if editing_id %}disabled{% endif %}>
-              削除
-            </button>
-          </td>
-        </form>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- 戻る / ログアウトは独立フォーム -->
-  <form action="{% url 'manage_customer' struserid=struserid %}" method="post">
-    {% csrf_token %}
     <button class="btn btn-secondary w-100 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
+
     <button class="btn btn-danger w-100" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
+
+    
   </form>
 </div>
-
-<!-- モーダル -->
-<div class="modal fade" id="deviceMapModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">機器配置図</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body text-center">
-        {% if device_map %}
-          <img src="{{ device_map }}" class="img-fluid w-100">
-        {% else %}
-          <div class="alert alert-warning">機器配置図は登録されていません</div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-
-{% if open_modal %}
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    var myModal = new bootstrap.Modal(document.getElementById('deviceMapModal'));
-    myModal.show();
-  });
-</script>
-{% endif %}
+<br>    
+<br>
+<br>
+<br>
+<br>
 {% endblock %}

@@ -2,7 +2,9 @@
 {% load static %}
 {% block content %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
-      rel="stylesheet" crossorigin="anonymous">
+      rel="stylesheet" 
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+      crossorigin="anonymous">
 
 <div class="d-flex align-items-center justify-content-center ">
   <form action="{% url 'manage_admin' struserid=struserid %}" method="post" style="min-width: 400px;">
@@ -13,36 +15,43 @@
 
     {% if RequiredError %}
       <div class="alert alert-danger text-center" role="alert">
-        入力エラーがあります
+        顧客名が重複しています
       </div>
     {% endif %}
 
-    {% if DuplicateError %}
+    {% if RequiredError %}
       <div class="alert alert-danger text-center" role="alert">
-        ログインIDまたは名前が既に使用されています
+        ログインIDが重複しています
       </div>
     {% endif %}
 
     <div class="container m-3">
       <div class="row mb-3">
         <label class="col-4 col-form-label text-end">名前：</label>
-        <div class="col-8">{{ Form.chrName }}</div>
+        <div class="col-8">
+          {{ Form.chrName }}
+        </div>
       </div>
       <div class="row mb-3">
         <label class="col-4 col-form-label text-end">ログインID：</label>
-        <div class="col-8">{{ Form.chrLoginID }}</div>
+        <div class="col-8">
+          {{ Form.chrLoginID }}
+        </div>
       </div>
       <div class="row mb-3">
         <label class="col-4 col-form-label text-end">パスワード：</label>
-        <div class="col-8">{{ Form.chrPassWord }}</div>
+        <div class="col-8">
+          {{ Form.chrPassWord }}
+        </div>
       </div>
       <div class="row mb-3">
         <label class="col-4 col-form-label text-end">メールアドレス：</label>
-        <div class="col-8">{{ Form.chrMail }}</div>
+        <div class="col-8">
+          {{ Form.chrMail }}
+        </div>
       </div>
       <button class="btn btn-primary w-100 mb-3" type="submit" name="btnCreate">登録</button>
     </div>
-
     <div class="container mt-4">
       <table class="table table-bordered table-striped text-center">
         <thead>
@@ -57,14 +66,13 @@
         </thead>
         <tbody>
           {% for user in admins %}
-          <tr id="row-{{ user.id }}">
-            <td class="editable" data-field="usrName">{{ user.usrName }}</td>
-            <td class="editable" data-field="usrLoginID">{{ user.usrLoginID }}</td>
-            <td class="editable" data-field="usrPassWord">{{ user.usrPassWord }}</td>
-            <td class="editable" data-field="usrMail">{{ user.usrMail }}</td>
+          <tr>
+            <td>{{ admins.chrName }}</td>
+            <td>{{ admins.chrLoginID }}</td>
+            <td>{{ admins.chrPassWord }}</td>
+            <td>{{ admins.chrMail }}</td>
             <td>
-              <button type="button" class="btn btn-sm btn-warning edit-btn" data-id="{{ user.id }}">編集</button>
-              <button type="button" class="btn btn-sm btn-success save-btn d-none" data-id="{{ user.id }}">保存</button>
+              <button type="submit" class="btn btn-sm btn-warning" name="btnEdit" value="{{ user.id }}" formnovalidate>編集</button>
             </td>
             <td>
               <button type="submit" class="btn btn-sm btn-danger" name="btnDelete" value="{{ user.id }}" formnovalidate>削除</button>
@@ -74,111 +82,13 @@
         </tbody>
       </table>
     </div>
-
     <button class="btn btn-secondary w-100 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
     <button class="btn btn-danger w-100" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
   </form>
 </div>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  // 編集ボタン押下
-  document.querySelectorAll(".edit-btn").forEach(function (button) {
-    button.addEventListener("click", function () {
-      const rowId = this.dataset.id;
-      const row = document.querySelector("#row-" + rowId);
-
-      // 他の行の編集ボタンを無効化
-      document.querySelectorAll(".edit-btn").forEach(btn => btn.disabled = true);
-      this.disabled = false;
-
-      // 他の行の削除ボタンを無効化
-      document.querySelectorAll("button[name='btnDelete']").forEach(btn => btn.disabled = true);
-      row.querySelector("button[name='btnDelete']").disabled = false;
-
-      // 登録ボタンも無効化
-      document.querySelector("button[name='btnCreate']").disabled = true;
-    
-      // 各セルを input に変換
-      row.querySelectorAll(".editable").forEach(function (cell) {
-        const value = cell.textContent.trim();
-        const field = cell.dataset.field;
-
-        if (field === "usrLoginID" || field === "usrPassWord") {
-          cell.innerHTML = `<input type="text" class="form-control" value="${value}"
-                              data-field="${field}" 
-                              pattern="[A-Za-z0-9]+"
-                              title="半角英数字のみ入力してください"
-                              required>`;
-        } else {
-          cell.innerHTML = `<input type="text" class="form-control" value="${value}" data-field="${field}">`;
-        }
-      });
-
-      // ボタン切り替え
-      row.querySelector(".edit-btn").classList.add("d-none");
-      row.querySelector(".save-btn").classList.remove("d-none");
-    });
-  });
-
-  // 保存ボタン押下
-  document.querySelectorAll(".save-btn").forEach(function (button) {
-    button.addEventListener("click", function () {
-      const rowId = this.dataset.id;
-      const row = document.querySelector("#row-" + rowId);
-
-      // 入力チェック（HTMLのpatternを利用）
-      let valid = true;
-      row.querySelectorAll("input").forEach(function (input) {
-        if (!input.checkValidity()) {
-          valid = false;
-          input.reportValidity();
-        }
-      });
-      if (!valid) return;
-
-      // 入力値を収集
-      const data = { id: rowId };
-      row.querySelectorAll("input").forEach(function (input) {
-        data[input.dataset.field] = input.value;
-      });
-
-      // Ajaxでサーバーに送信
-      fetch("{% url 'manage_admin' struserid=struserid %}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": "{{ csrf_token }}",
-        },
-        body: JSON.stringify({ action: "update", ...data }),
-      })
-      .then(response => response.json())
-      .then(result => {
-        if (result.success) {
-          // 表示を更新
-          row.querySelectorAll(".editable").forEach(function (cell) {
-            const field = cell.dataset.field;
-            const value = data[field];
-            cell.textContent = value;
-          });
-
-          // ボタン切り替え
-          row.querySelector(".edit-btn").classList.remove("d-none");
-          row.querySelector(".save-btn").classList.add("d-none");
-
-          // 他の行の編集ボタンを有効化
-          document.querySelectorAll(".edit-btn").forEach(btn => btn.disabled = false);
-          // 🔽 削除ボタンも有効化
-          document.querySelectorAll("button[name='btnDelete']").forEach(btn => btn.disabled = false);
-
-          document.querySelector("button[name='btnCreate']").disabled = false;
-
-        } else {
-          alert("更新に失敗しました: " + (result.error || ""));
-        }
-      });
-    });
-  });
-});
-</script>
+<br>    
+<br>
+<br>
+<br>
+<br>
 {% endblock %}

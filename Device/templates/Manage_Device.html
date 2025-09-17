@@ -29,18 +29,13 @@
     <!-- 顧客選択と検索 -->
     <div class="row mb-3">
       <div class="col-md-6">
-        <select class="form-select" name="customer_id">
-          <option value="">顧客を選択してください</option>
-          {% for customer in customers %}
-          <option value="{{ customer.id }}"
-            {% if SelectedCustomer and customer.id == SelectedCustomer.id %}
-              selected
-            {% endif %}
-          >
-            {{ customer.usrName }}
-          </option>
-          {% endfor %}
-        </select>
+        {% for customer in customers %}
+          <li class="list-group-item">
+            <a href="{% url 'customer_devices' customer.id %}">
+              {{ customer.usrCustomer }}
+            </a>
+          </li>
+        {% endfor %}
       </div>
       <div class="col-md-2">
         <button class="btn btn-secondary w-100" type="submit" name="btnSearch">検索</button>
@@ -66,25 +61,18 @@
           </tr>
         </thead>
         <tbody>
-          {% for device in Devices %}
+          {% for device in devices %}
           <tr>
-              <td>{{ device.dvcName }}</td>
-              <td>{{ device.dvcKind }}</td>
-              <td>{{ device.dvcPurchase }}</td>
-              <td>{{ device.dvcUser }}</td>
-              <td>{{ device.dvcPlace }}</td>
+            <td>{{ device.name }}</td>
+            <td>{{ device.media }}</td>
+            <td>{{ device.purchase_date }}</td>
+            <td>{{ device.user }}</td>
+            <td>{{ device.location }}</td>
             <td>
-              <button type="submit"
-                      class="btn btn-info btn-sm mb-3"
-                      name="btnCheckSoftware"
-                      value="{{ device.id }}"
-                      formnovalidate
-                      {% if not device.has_software %}disabled{% endif %}>
-                確認
-              </button>
+              <button type="submit" class="btn btn-info btn-sm mb-3" name="btnCheckSoftware" value="{{ device.id }}" formnovalidate>確認</button>
             </td>
             <td>
-              <button type="submit" name="btnEdit" value="{{ device.id }}" class="btn btn-warning">編集</button>
+              <button type="submit" class="btn btn-warning btn-sm mb-3" name="btnEdit" value="{{ device.id }}" formnovalidate>編集</button>
             </td>
             <td>
               <button type="submit" class="btn btn-danger btn-sm" name="btnDelete" value="{{ device.id }}" formnovalidate>削除</button>
@@ -99,67 +87,13 @@
       </table>
     </div>
 
-    <!-- ソフト一覧モーダル -->
-    <div class="modal fade" id="softwareModal" tabindex="-1" aria-labelledby="softwareModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="softwareModalLabel">ソフト一覧</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
-          </div>
-          <div class="modal-body">
-            {% if softwares %}
-            <table class="table table-bordered table-striped text-center">
-              <thead>
-                <tr>
-                  <th>ソフト名</th>
-                  <th>保証期限</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for sw in softwares %}
-                <tr>
-                  <td>{{ sw.dvsSoftName }}</td>
-                  <td>{{ sw.dvsWarranty|date:"Y-m-d" }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            {% else %}
-            <div class="alert alert-warning text-center">
-              ソフトが登録されていません
-            </div>
-            {% endif %}
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-          </div>
-        </div>
-      </div>
-    </div>
-        <input type="hidden" name="selected_customer_id" value="{{ SelectedCustomer.id }}">
-        <div class="d-flex flex-column align-items-center gap-4 mb-5" style="max-width: 400px; margin: auto;">
-          <button class="btn btn-primary w-50"
-                  type="submit"
-                  name="btnOutput"
-                  {% if not can_output %}disabled{% endif %}>
-            出力
-          </button>
-          <button class="btn btn-secondary w-50" type="submit" name="btnBack" formnovalidate>戻る</button>
+    <!-- 出力・戻る・ログアウト -->
+        <div class="footer-btns d-flex flex-column align-items-center mt-4">
+          <button class="btn btn-primary w-50 mb-3" type="submit" name="btnOutput" {% if not devices %}disabled{% endif %}>出力</button>
+          <button class="btn btn-secondary w-50 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
           <button class="btn btn-danger w-50" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
         </div>
 
   </form>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
-
-{% if open_modal %}
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    var myModal = new bootstrap.Modal(document.getElementById('softwareModal'));
-    myModal.show();
-  });
-</script>
-{% endif %}
-
 {% endblock %}

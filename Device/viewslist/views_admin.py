@@ -3,9 +3,6 @@ from django.urls import reverse
 from django.db import transaction
 from Device.formslist.forms_admin import AdminForm
 from Device.models import UserMst
-from django.http import JsonResponse
-import json
-import re
 import logging
 #------------------------------------------------------------------------------------------------#
 
@@ -15,41 +12,6 @@ import logging
 
 def manage_admin(request, struserid ):
     try:
-        # JSONリクエスト処理 (Ajax保存)
-        if request.method == "POST" and request.content_type == "application/json":
-            data = json.loads(request.body)
-            if data.get("action") == "update":
-                try:
-                    user = UserMst.objects.get(id=data.get("id"), usrKind=2, usrDelete=False)
-
-                    login_id = data.get("usrLoginID", user.usrLoginID)
-                    password = data.get("usrPassWord", user.usrPassWord)
-
-                    # 半角英数字チェック
-                    if not re.match(r'^[A-Za-z0-9]+$', login_id) or not re.match(r'^[A-Za-z0-9]+$', password):
-                        return JsonResponse({"success": False, "error": "ログインIDとパスワードは半角英数字のみです"})
-                    
-                    # ログインID重複チェック（自分以外）
-                    if UserMst.objects.filter(
-                        usrLoginID=login_id, usrDelete=False
-                    ).exclude(id=user.id).exists():
-                        return JsonResponse({"success": False, "error": "このログインIDは既に使用されています"})
-
-                    # 名前重複チェック（自分以外）
-                    if UserMst.objects.filter(
-                        usrName=data.get("usrName", user.usrName), usrDelete=False
-                    ).exclude(id=user.id).exists():
-                        return JsonResponse({"success": False, "error": "この名前は既に使用されています"})
-
-                    user.usrName = data.get("usrName", user.usrName)
-                    user.usrLoginID = login_id
-                    user.usrPassWord = password
-                    user.usrMail = data.get("usrMail", user.usrMail)
-                    user.save()
-                    return JsonResponse({"success": True})
-                except UserMst.DoesNotExist:
-                    return JsonResponse({"success": False, "error": "対象の管理者が見つかりません"})
-            return JsonResponse({"success": False, "error": "無効なアクション"})
             
         #不正アクセスが起きた場合
         objuser = UserMst.objects.filter( id = struserid )         
@@ -93,6 +55,7 @@ def manage_admin(request, struserid ):
             objuser = UserMst.objects.get(id=struserid) 
             admins = UserMst.objects.filter(usrKind=2, usrDelete=False)
 
+
             # ホーム画面表示
             return render( request, 'manage_admin.html', params )    
         
@@ -102,81 +65,127 @@ def manage_admin(request, struserid ):
             # 登録ボタン押下時
             if 'btnCreate' in request.POST:
 
-                # 未入力チェック
-                if not request.POST['chrLoginID'] or not request.POST['chrPassWord'] or not request.POST['chrName']:
-                    params['RequiredError'] = True
-                    return render(request, 'manage_admin.html', params)
+                # 未入力がある場合
+                if ( request.POST['chrLoginID']  == '' or 
+                    request.POST['chrPassWord']  == '' or
+                    request.POST['chrName']      == ''
+                ):
+                    
+                    blnerror    = True
 
-                # ログインIDが既に存在するか確認
-                if UserMst.objects.filter(usrLoginID=request.POST['chrLoginID'], usrDelete=False).exists():
-                    params['DuplicateError'] = True
-                    return render(request, 'manage_admin.html', params)
+                    # パラメータ更新
+                    params['RequiredError'] = blnerror
 
-                # 名前が既に存在するか確認
-                if UserMst.objects.filter(usrName=request.POST['chrName'], usrDelete=False).exists():
-                    params['DuplicateError'] = True
-                    return render(request, 'manage_admin.html', params)
+                    return render( request, 'manage_admin.html', params )    
 
-                # 問題なければ登録
-                with transaction.atomic():
-                    objuser = UserMst()
-                    objuser.usrName     = request.POST['chrName']
-                    objuser.usrLoginID  = request.POST['chrLoginID']
-                    objuser.usrPassWord = request.POST['chrPassWord']
-                    objuser.usrMail     = request.POST['chrMail']
-                    objuser.usrKind     = 2
-                    objuser.usrDelete   = False
+                objuser = None
+                objuser = UserMst.objects.filter( usrLoginID  = request.POST[ 'chrLoginID' ], 
+                                                    usrPassWord = request.POST[ 'chrPassWord' ], 
+                                                    usrName     = request.POST['chrName'],
+                                                    usrDelete   = False                            
+                                            ).first()
+                
+                # 入力に不備がある場合
+                if objuser is None :   
+                    blnerror  = True  
+
+                    # パラメータ更新
+                    params['DuplicateError'] = blnerror_d
+
+                    return render( request, 'manage_admin.html', params )
+                
+                # 入力された名前が既に存在する場合
+                objuser = UserMst.objects.filter( usrName    = request.POST[ 'chrName' ],
+                                                    usrDelete  = False                            
+                                                ).first()   
+                if objuser.count() > 0 :
+                    blnerror_d  = True
+
+                    # パラメータ更新
+                    params['DuplicateError'] = blnerror_d
+                    return render( request, 'manage_admin.html', params )
+                
+                # 入力されたログインIDが既に存在する場合
+                objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
+                                                    usrDelete  = False                            
+                                                ).first()
+                if objuser.count() > 0 :
+                    blnerror_d  = True
+
+                    # パラメータ更新
+                    params['DuplicateError'] = blnerror_d
+                    return render( request, 'manage_admin.html', params )                       
+
+                # 入力に不備がない場合
+                else :
+                    # トランザクション設定
+                    with transaction.atomic():
+
+                        # 管理者新規作成
+                        objuser = UserMst()
+                    
+                    # 入力されたデータ登録
+                    objuser.usrName        = request.POST['chrName']
+                    objuser.usrLoginID     = request.POST['chrLoginID']
+                    objuser.usrPassWord    = request.POST['chrPassWord']
+                    objuser.usrMail        = request.POST['chrMail']
+                    objuser.usrKind        = 2
+                    objuser.usrDelete      = False
                     objuser.save()
-
-                return redirect('manage_admin', struserid=struserid)
+                    strurl = reverse( 'manage_admin', kwargs = { 'struserid' : struserid } )
+                    return redirect( strurl )
                 
             # 編集ボタン押下時
             elif 'btnEdit' in request.POST:
 
-                edit_id = request.POST.get('btnEdit')   # 編集対象の管理者ID
-                params['edit_id'] = int(edit_id)
-                return render(request, 'manage_admin.html', params)
+                # 押下した顧客情報取得
+                objuser = UserMst.objects.get( id = struserid )
+                return render( request, 'manage_admin.html', params )
         
             # 保存ボタン押下時
             elif 'btnSave' in request.POST:
-                edit_id = request.POST.get('edit_id')  # 編集対象の管理者ID
 
                 # 入力内容に未入力があった場合
                 if not request.POST['chrName'] or not request.POST['chrLoginID'] or not request.POST['chrPassWord']:
-                    params['InputError'] = True
-                    return render(request, 'manage_admin.html', params)
+                    blnerror = True
+                    params['InputError'] = blnerror
+                    return render( request, 'manage_admin.html', params )
+            
+                # 入力内容に不備があった場合
+                elif not request.POST['chrName'] or not request.POST['chrLoginID'] or not request.POST['chrPassWord']:
+                    blnerror = True
+                    params['InputError'] = blnerror     
+                    return render( request, 'manage_admin.html', params )
+                
+                # 入力された管理者名がすでにDB(編集アカウント以外)に登録されている場合
+                objuser = UserMst.objects.filter( usrName = request.POST[ 'chrName' ],
+                                                    usrDelete = False ).exclude( id = struserid ).first()
+                if objuser:
+                    blnerror = True
+                    params['InputError'] = blnerror
+                    return render( request, 'manage_admin.html', params )
+                
+                # 入力されたログインIDがDB(編集アカウント以外)に登録されている場合
+                objuser = UserMst.objects.filter( usrLoginID = request.POST[ 'chrLoginID' ],
+                                                    usrDelete = False ).exclude( id = struserid ).first()
+                if objuser:
+                    blnerror = True
+                    params['InputError'] = blnerror
+                    return render( request, 'manage_admin.html', params )
+                
+                else :
+                    with transaction.atomic():
+                        objuser = UserMst.objects.get( id = struserid )
+                        objuser.usrName      = request.POST['chrName']
+                        objuser.usrLoginID   = request.POST['chrLoginID']
+                        objuser.usrPassWord  = request.POST['chrPassWord']
+                        objuser.usrMail      = request.POST['chrMail']
+                        objuser.save()
 
-                # 名前重複チェック（自分以外）
-                if UserMst.objects.filter(
-                    usrName=request.POST['chrName'],
-                    usrDelete=False
-                ).exclude(id=edit_id).exists():
-                    params['DuplicateError'] = True
-                    return render(request, 'manage_admin.html', params)
-
-                # ログインID重複チェック（自分以外）
-                if UserMst.objects.filter(
-                    usrLoginID=request.POST['chrLoginID'],
-                    usrDelete=False
-                ).exclude(id=edit_id).exists():
-                    params['DuplicateError'] = True
-                    return render(request, 'manage_admin.html', params)
-
-                # 更新処理
-                with transaction.atomic():
-                    objuser = UserMst.objects.get(id=edit_id)
-                    objuser.usrName     = request.POST['chrName']
-                    objuser.usrLoginID  = request.POST['chrLoginID']
-                    objuser.usrPassWord = request.POST['chrPassWord']
-                    objuser.usrMail     = request.POST['chrMail']
-                    objuser.save()
-
-                return redirect('manage_admin', struserid=struserid)
+                    strurl = reverse( 'manage_admin', kwargs = { 'struserid' : struserid } )
 
             # 削除ボタン押下時
             elif 'btnDelete' in request.POST:
-
-                delete_id = request.POST.get('btnDelete')
                 # 削除される管理者が1人だけの時
                 if UserMst.objects.filter( usrKind = 2, usrDelete = False ).count() <= 1 :
                     params['DeleteError'] = True
@@ -184,13 +193,9 @@ def manage_admin(request, struserid ):
                 else :
 
                     with transaction.atomic():
-                        user = UserMst.objects.get(id=delete_id, usrKind=2)
-                        user.usrDelete = True
-                        user.save()
+                        objuser.usrDelete = True
+                        objuser.save()
 
-                admins = UserMst.objects.filter(usrKind=2, usrDelete=False)
-                params['admins'] = admins
-                
                 return render( request, 'manage_admin.html', params )
                 
             # 戻るボタン押下時

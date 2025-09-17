@@ -21,9 +21,9 @@
     {% else %}
 
     {% if has_image %}
-      <div class="text-center mb-3">
-        <img src="{{ image_url }}" class="img-fluid" alt="機器配置図">
-      </div>
+    <img src="{% static 'images/home_customer.png' %}" class="img-fluid" alt="Responsive image">
+    {% else %}
+    <!-- 画像がない場合は何も表示しない -->
     {% endif %}
 
    <div class="row mb-3">
@@ -43,7 +43,7 @@
             {% for device in devices %}
             <tr>
               <td>{{ device.dvcName }}</td>
-              <td>{{ device.dvcKind }}</td>
+              <td>{{ device.dvcMedia }}</td>
               <td>{{ device.dvcPurchase }}</td>
               <td>{{ device.dvcUser }}</td>
               <td>{{ device.dvcPlace }}</td>
