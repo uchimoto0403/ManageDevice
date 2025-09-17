@@ -32,13 +32,13 @@
         <select class="form-select" name="customer_id">
           <option value="">顧客を選択してください</option>
           {% for customer in customers %}
-            <option value="{{ customer.id }}"
-              {% if SelectedCustomer and customer.id == SelectedCustomer.id %}
-                selected
-              {% endif %}
-            >
-              {{ customer.usrCustomer }}
-            </option>
+          <option value="{{ customer.id }}"
+            {% if SelectedCustomer and customer.id == SelectedCustomer.id %}
+              selected
+            {% endif %}
+          >
+            {{ customer.usrName }}
+          </option>
           {% endfor %}
         </select>
       </div>

@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-4b4j69ym4!sxl)re3cn5ygby^246n!#wob#%=02y(18hl@f0!k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -134,49 +134,3 @@ CRONJOBS = [
     ('0 9 * * *', 'django.core.management.call_command', ['check_expiry']),
     # 毎朝9時に実行
 ]
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-
-    'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} {name}: {message}',
-            'style': '{',
-        },
-    },
-
-    'handlers': {
-        'info_file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/info.log'),
-            'formatter': 'verbose',
-        },
-        'warning_file': {
-            'level': 'WARNING',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/warning.log'),
-            'formatter': 'verbose',
-        },
-        'error_file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
-            'formatter': 'verbose',
-        },
-    },
-
-    'loggers': {
-        'django': {
-            'handlers': ['info_file', 'warning_file', 'error_file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'django.request': {
-            'handlers': ['error_file'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-    }
-}

@@ -171,6 +171,8 @@ document.addEventListener("DOMContentLoaded", function () {
           // 🔽 削除ボタンも有効化
           document.querySelectorAll("button[name='btnDelete']").forEach(btn => btn.disabled = false);
 
+          document.querySelector("button[name='btnCreate']").disabled = false;
+
         } else {
           alert("更新に失敗しました: " + (result.error || ""));
         }
