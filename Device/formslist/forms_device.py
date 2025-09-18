@@ -163,7 +163,7 @@ class DeviceForm( forms.Form ):
 # CPU
     chrDeviceCPU = forms.CharField(
         label = 'CPU',
-        max_length = 15,
+        max_length = 50,
         required=False,
         widget = forms.TextInput(
             attrs = {

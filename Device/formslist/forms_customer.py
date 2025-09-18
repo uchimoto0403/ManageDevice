@@ -9,7 +9,7 @@ class CustomerForm( forms.Form ):
     #顧客名
     chrCustomer = forms.CharField(
         label = '顧客名',
-        max_length = 30,
+        max_length = 15,
         widget = forms.TextInput(
             attrs = {
                 'class': 'form-control',

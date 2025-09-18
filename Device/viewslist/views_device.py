@@ -444,6 +444,10 @@ def create_device(request, struserid):
                     else:
                         messages.error(request, "ソフト名と保証期限を入力してください")
 
+                    params['Form'] = DeviceForm(request.POST)
+                    params['temp_softs'] = temp_softs
+                    return render(request, 'create_device.html', params)
+                
                 if 'btnUpdateSoftTemp' in request.POST:
                     index = int(request.POST.get('soft_index'))
                     new_name = request.POST.get('chrSoftName', '').strip()
@@ -541,19 +545,21 @@ def edit_device(request, struserid, strdevid):
             if 'btnUpdateDevice' in request.POST:
                 device_name = request.POST.get('chrDeviceName', '').strip()
 
+                customer = device.dvcCustomer
+
                 if not device_name:
                     messages.error(request, "機器名は必須です")
-                    params['Form'] = DeviceForm(request.POST, instance=device)
+                    params['Form'] = DeviceForm(request.POST)
                     return render(request, 'edit_device.html', params)
 
                 # 重複チェック (顧客単位)
                 if DeviceMst.objects.filter(
-                    dvcCustomer=device.dvcCustomer,
+                    dvcCustomer=customer,
                     dvcName=device_name,
                     dvcDeleteFlag=False
                 ).exclude(id=device.id).exists():
                     messages.error(request, f"顧客『{device.dvcCustomer.usrCustomer}』には既に同じ機器名が登録されています")
-                    params['Form'] = DeviceForm(request.POST, instance=device)
+                    params['Form'] = DeviceForm(request.POST)
                     return render(request, 'edit_device.html', params)
 
                 # 更新処理
@@ -596,7 +602,7 @@ def edit_device(request, struserid, strdevid):
                 else:
                     messages.error(request, "ソフト名と保証期限は必須です")
 
-                params['Form'] = DeviceForm(request.POST or None, instance=device)
+                params['Form'] = DeviceForm(request.POST or None)
                 params['softwares'] = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
                 return render(request, 'edit_device.html', params)
 
@@ -614,7 +620,7 @@ def edit_device(request, struserid, strdevid):
                 else:
                     messages.error(request, "ソフト名と保証期限は必須です")
 
-                params['Form'] = DeviceForm(request.POST or None, instance=device)
+                params['Form'] = DeviceForm(request.POST or None)
                 params['softwares'] = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
                 return render(request, 'edit_device.html', params)
 
@@ -626,7 +632,7 @@ def edit_device(request, struserid, strdevid):
                 soft.save()
                 messages.success(request, f"ソフト '{soft.dvsSoftName}' を削除しました")
 
-                params['Form'] = DeviceForm(request.POST or None, instance=device)
+                params['Form'] = DeviceForm(request.POST or None)
                 params['softwares'] = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
                 return render(request, 'edit_device.html', params)
 

@@ -74,7 +74,7 @@ def manage_customer(request, struserid):
                 password = request.POST['chrPassWord']
 
                 # 半角英数字チェック
-                if not re.match(r'^[A-Za-z0-9]+$', loginid) or not re.match(r'^[A-Za-z0-9]+$', password):
+                if not re.match(r'^[A-Za-z0-9_-]+$', loginid) or not re.match(r'^[A-Za-z0-9_-]+$', password):
                     params['RequiredError'] = True
                     params['error_message'] = "ログインIDとパスワードは半角英数字のみ使用できます"
                     params['editing_id'] = customer_id

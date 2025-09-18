@@ -26,7 +26,7 @@ def manage_admin(request, struserid ):
                     password = data.get("usrPassWord", user.usrPassWord)
 
                     # 半角英数字チェック
-                    if not re.match(r'^[A-Za-z0-9]+$', login_id) or not re.match(r'^[A-Za-z0-9]+$', password):
+                    if not re.match(r'^[A-Za-z0-9_-]+$', login_id) or not re.match(r'^[A-Za-z0-9_-]+$', password):
                         return JsonResponse({"success": False, "error": "ログインIDとパスワードは半角英数字のみです"})
                     
                     # ログインID重複チェック（自分以外）
@@ -122,7 +122,7 @@ def manage_admin(request, struserid ):
                     objuser = UserMst()
                     objuser.usrName     = request.POST['chrName']
                     objuser.usrLoginID  = request.POST['chrLoginID']
-                    objuser.usrPassWord = request.POST['chrPassWord']
+                    objuser.usrPassWord = make_password(request.POST['chrPassWord'])
                     objuser.usrMail     = request.POST['chrMail']
                     objuser.usrKind     = 2
                     objuser.usrDelete   = False
@@ -167,7 +167,7 @@ def manage_admin(request, struserid ):
                     objuser = UserMst.objects.get(id=edit_id)
                     objuser.usrName     = request.POST['chrName']
                     objuser.usrLoginID  = request.POST['chrLoginID']
-                    objuser.usrPassWord = request.POST['chrPassWord']
+                    objuser.usrPassWord = make_password(request.POST['chrPassWord'])
                     objuser.usrMail     = request.POST['chrMail']
                     objuser.save()
 

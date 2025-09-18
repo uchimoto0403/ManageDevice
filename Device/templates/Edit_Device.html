@@ -7,7 +7,7 @@
       crossorigin="anonymous">
 
 <div class="container" style="max-width:1200px;">
-  <form action="{% url 'create_device' struserid=struserid %}" method="post">
+  <form action="{% url 'edit_device' struserid=struserid strdevid=device.id %}" method="post">
     {% csrf_token %}
     
     <!-- タイトル -->
@@ -37,12 +37,12 @@
     <div class="row mb-3">
       <label class="col-2 col-form-label text-end">顧客名：</label>
       <div class="col-4">
-        <select name="intCustomer" class="form-select" required>
-          <option value="">選択してください</option>
-          {% for customer in customers %}
-            <option value="{{ customer.id }}">{{ customer.usrName }}</option>
-          {% endfor %}
+        <select name="intCustomer" class="form-select" disabled>
+          <option value="{{ device.dvcCustomer.id }}" selected>
+            {{ device.dvcCustomer.usrName }}
+          </option>
         </select>
+<input type="hidden" name="intCustomer" value="{{ device.dvcCustomer.id }}">
       </div>
       <label class="col-2 col-form-label text-end">シリアル番号：</label>
       <div class="col-4">{{ Form.chrDeviceSerialNumber }}</div>
