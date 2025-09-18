@@ -4,6 +4,7 @@ from django.db import transaction
 from Device.formslist.forms_admin import AdminForm
 from Device.models import UserMst
 from django.http import JsonResponse
+from django.contrib.auth.hashers import make_password
 import json
 import re
 import logging

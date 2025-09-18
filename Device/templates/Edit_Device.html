@@ -42,7 +42,7 @@
             {{ device.dvcCustomer.usrName }}
           </option>
         </select>
-<input type="hidden" name="intCustomer" value="{{ device.dvcCustomer.id }}">
+<input type="hidden" name="chrDeviceCustomer" value="{{ device.dvcCustomer.id }}">
       </div>
       <label class="col-2 col-form-label text-end">シリアル番号：</label>
       <div class="col-4">{{ Form.chrDeviceSerialNumber }}</div>
@@ -136,7 +136,7 @@
       </div>
       <div class="modal-body">
 
-        <!-- 既存ソフト一覧（インライン編集形式） -->
+        <!-- 既存ソフト一覧（モーダル内に <form> は置かない！） -->
         {% if temp_softs %}
           <table class="table table-bordered">
             <thead>
@@ -149,20 +149,18 @@
             <tbody>
               {% for soft in temp_softs %}
               <tr>
-                <form method="post" action="{% url 'create_device' struserid=struserid %}">
-                  {% csrf_token %}
-                  <td>
-                    <input type="text" name="chrSoftName" value="{{ soft.name }}" class="form-control">
-                  </td>
-                  <td>
-                    <input type="date" name="chrWarranty" value="{{ soft.warranty }}" class="form-control">
-                  </td>
-                  <td>
-                    <input type="hidden" name="soft_index" value="{{ forloop.counter0 }}">
-                    <button type="submit" name="btnUpdateSoftTemp" class="btn btn-success btn-sm">保存</button>
-                    <button type="submit" name="btnDeleteSoftTemp" class="btn btn-danger btn-sm">削除</button>
-                  </td>
-                </form>
+                <td>
+                  <input type="text" name="chrSoftName" value="{{ soft.name }}" class="form-control">
+                </td>
+                <td>
+                  <input type="date" name="chrWarranty" value="{{ soft.warranty }}" class="form-control">
+                </td>
+                <td class="d-flex gap-2">
+                  <!-- どの行を編集/削除するかを示す hidden -->
+                  <input type="hidden" name="soft_index" value="{{ forloop.counter0 }}">
+                  <button type="submit" name="btnUpdateSoftTemp" class="btn btn-success btn-sm">保存</button>
+                  <button type="submit" name="btnDeleteSoftTemp" class="btn btn-danger btn-sm">削除</button>
+                </td>
               </tr>
               {% endfor %}
             </tbody>
@@ -173,21 +171,17 @@
 
         <hr>
 
-        <!-- 新規追加フォーム -->
-        <form method="post" action="{% url 'create_device' struserid=struserid %}">
-          {% csrf_token %}
-          <div class="row mb-3">
-            <div class="col-5">
-              <input type="text" name="chrSoftName" class="form-control" placeholder="ソフト名">
-            </div>
-            <div class="col-5">
-              <input type="date" name="chrWarranty" class="form-control">
-            </div>
-            <div class="col-2">
-              <button type="submit" name="btnAddSoftTemp" class="btn btn-primary w-100">追加</button>
-            </div>
+        <div class="row mb-3">
+          <div class="col-5">
+            <input type="text" name="chrSoftName" class="form-control" placeholder="ソフト名">
           </div>
-        </form>
+          <div class="col-5">
+            <input type="date" name="chrWarranty" class="form-control">
+          </div>
+          <div class="col-2">
+            <button type="submit" name="btnAddSoftTemp" class="btn btn-primary w-100">追加</button>
+          </div>
+        </div>
 
       </div>
     </div>

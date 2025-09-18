@@ -69,7 +69,7 @@
           {% for device in Devices %}
           <tr>
               <td>{{ device.dvcName }}</td>
-              <td>{{ device.dvcKind }}</td>
+              <td>{{ device.get_dvcKind_display }}</td>
               <td>{{ device.dvcPurchase }}</td>
               <td>{{ device.dvcUser }}</td>
               <td>{{ device.dvcPlace }}</td>
