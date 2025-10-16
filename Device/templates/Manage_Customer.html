@@ -146,7 +146,7 @@
             {% if editing_id == user.id %}
               <button class="btn btn-success btn-sm" type="submit" name="btnSave" value="{{ user.id }}">保存</button>
             {% else %}
-              <button class="btn btn-primary btn-sm" type="submit" name="btnEdit" value="{{ user.id }}"
+              <button class="btn btn-warning btn-sm" type="submit" name="btnEdit" value="{{ user.id }}"
                       {% if editing_id %}disabled{% endif %}>
                 編集
               </button>
@@ -167,12 +167,18 @@
   </table>
 
   <!-- 戻る / ログアウトは独立フォーム -->
-  <form action="{% url 'manage_customer' struserid=struserid %}" method="post">
-    {% csrf_token %}
-    <button class="btn btn-secondary w-100 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
-    <button class="btn btn-danger w-100" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
-  </form>
+<form action="{% url 'manage_customer' struserid=struserid %}" method="post" class="text-center">
+  {% csrf_token %}
+  <button class="btn btn-secondary w-50 mb-3 d-block mx-auto" type="submit" name="btnBack" formnovalidate>
+    戻る
+  </button>
+  <button class="btn btn-danger w-50 d-block mx-auto" type="submit" name="btnLogout" formnovalidate>
+    ログアウト
+  </button>
+</form>
 </div>
+<br>
+<br>
 
 <!-- モーダル -->
 <div class="modal fade" id="deviceMapModal" tabindex="-1" aria-hidden="true">

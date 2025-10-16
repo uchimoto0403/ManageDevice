@@ -44,7 +44,7 @@ def manage_admin(request, struserid ):
 
                     user.usrName = data.get("usrName", user.usrName)
                     user.usrLoginID = login_id
-                    user.usrPassWord = password
+                    user.usrPassWord = make_password(password)
                     user.usrMail = data.get("usrMail", user.usrMail)
                     user.save()
                     return JsonResponse({"success": True})

@@ -365,7 +365,6 @@ def detail_device(request, struserid, strdevid ):
 # 引　数：リクエスト　ユーザーID
 # 戻り値：なし
 
-# 機器登録
 def create_device(request, struserid):
     try:
         objuser = UserMst.objects.filter(id=struserid)
@@ -376,8 +375,8 @@ def create_device(request, struserid):
         objuser = objuser.first()
         customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
 
-        # セッションから一時ソフトを取得（なければ空リスト）
         temp_softs = request.session.get('temp_softs', [])
+        temp_device = request.session.get('temp_device', {})
 
         params = {
             'User': objuser,
@@ -385,13 +384,12 @@ def create_device(request, struserid):
             'struserid': struserid,
             'customers': customers,
             'temp_softs': temp_softs,
+            'temp_device': temp_device,
         }
 
-        # --- GET時 ---
         if request.method == 'GET':
             return render(request, 'create_device.html', params)
 
-        # --- POST時 ---
         if request.method == 'POST':
 
             # 機器登録
@@ -401,14 +399,17 @@ def create_device(request, struserid):
 
                 if not device_name or not customer_id:
                     messages.error(request, "機器名と顧客は必須です")
+                    request.session['temp_device'] = request.POST.dict()
+                    params['temp_device'] = request.POST.dict()
                     return render(request, 'create_device.html', params)
 
                 customer = UserMst.objects.filter(id=customer_id, usrKind=1, usrDelete=False).first()
                 if not customer:
                     messages.error(request, "顧客が存在しません")
+                    request.session['temp_device'] = request.POST.dict()
+                    params['temp_device'] = request.POST.dict()
                     return render(request, 'create_device.html', params)
 
-                # 機器を保存
                 device = DeviceMst.objects.create(
                     dvcName=device_name,
                     dvcCustomer=customer,
@@ -433,7 +434,6 @@ def create_device(request, struserid):
                     dvcDeleteFlag=False,
                 )
 
-                # セッションにあるソフトをまとめて保存
                 for soft in temp_softs:
                     DeviceSoftMst.objects.create(
                         dvsDeviceID=device,
@@ -442,14 +442,15 @@ def create_device(request, struserid):
                         dvsDeleteFlag=False
                     )
 
-                # ソフト一時保存クリア
                 request.session['temp_softs'] = []
+                request.session.pop('temp_device', None)
 
                 messages.success(request, "機器とソフトを登録しました")
                 return redirect('create_device', struserid=struserid)
 
-            # ソフト追加（セッションに保存）
+            # ソフト追加
             if 'btnAddSoftTemp' in request.POST:
+                request.session['temp_device'] = request.POST.dict()
                 name = request.POST.get('chrSoftName', '').strip()
                 warranty = request.POST.get('chrWarranty', '').strip()
                 if name and warranty:
@@ -458,54 +459,54 @@ def create_device(request, struserid):
                     messages.success(request, f"ソフト '{name}' を追加しました")
                 else:
                     messages.error(request, "ソフト名と保証期限を入力してください")
-
                 params['temp_softs'] = temp_softs
+                params['temp_device'] = request.session['temp_device']
                 return render(request, 'create_device.html', params)
 
-            # ソフト編集
-            if 'btnUpdateSoftTemp' in request.POST:
-                index = int(request.POST.get('soft_index'))
-                new_name = request.POST.get('chrSoftName', '').strip()
-                new_warranty = request.POST.get('chrWarranty', '').strip()
-                if 0 <= index < len(temp_softs):
-                    if new_name and new_warranty:
-                        temp_softs[index]['name'] = new_name
-                        temp_softs[index]['warranty'] = new_warranty
+            # ソフト編集・削除
+            if 'btnUpdateSoftTemp' in request.POST or 'btnDeleteSoftTemp' in request.POST:
+                request.session['temp_device'] = request.POST.dict()
+
+                if 'btnUpdateSoftTemp' in request.POST:
+                    index = int(request.POST.get('soft_index'))
+                    new_name = request.POST.get('chrSoftName', '').strip()
+                    new_warranty = request.POST.get('chrWarranty', '').strip()
+                    if 0 <= index < len(temp_softs):
+                        if new_name and new_warranty:
+                            temp_softs[index]['name'] = new_name
+                            temp_softs[index]['warranty'] = new_warranty
+                            request.session['temp_softs'] = temp_softs
+                            messages.success(request, "ソフトを更新しました")
+                        else:
+                            messages.error(request, "ソフト名と保証期限を入力してください")
+
+                if 'btnDeleteSoftTemp' in request.POST:
+                    index = int(request.POST.get('soft_index'))
+                    if 0 <= index < len(temp_softs):
+                        deleted = temp_softs.pop(index)
                         request.session['temp_softs'] = temp_softs
-                        messages.success(request, f"ソフトを更新しました")
-                    else:
-                        messages.error(request, "ソフト名と保証期限を入力してください")
+                        messages.success(request, f"ソフト '{deleted['name']}' を削除しました")
 
                 params['temp_softs'] = temp_softs
+                params['temp_device'] = request.session['temp_device']
                 return render(request, 'create_device.html', params)
 
-            # ソフト削除
-            if 'btnDeleteSoftTemp' in request.POST:
-                index = int(request.POST.get('soft_index'))
-                if 0 <= index < len(temp_softs):
-                    deleted = temp_softs.pop(index)
-                    request.session['temp_softs'] = temp_softs
-                    messages.success(request, f"ソフト '{deleted['name']}' を削除しました")
-
-                params['temp_softs'] = temp_softs
-                return render(request, 'create_device.html', params)
-            
-            # 戻るボタン押下時
+            # 戻る・ログアウト
             if 'btnBack' in request.POST:
-                strurl = reverse('manage_device', kwargs={'struserid': struserid})
                 request.session['temp_softs'] = []
-                return redirect(strurl)
-            # ログアウトボタン押下時
-            elif 'btnLogout' in request.POST:
+                request.session.pop('temp_device', None)
+                return redirect(reverse('manage_device', kwargs={'struserid': struserid}))
+
+            if 'btnLogout' in request.POST:
                 request.session['temp_softs'] = []
+                request.session.pop('temp_device', None)
                 return redirect('login')
-        
+
         return render(request, 'create_device.html', params)
-            
-    except:
+
+    except Exception:
         import traceback
         logger = logging.getLogger(__name__)
-        logger.error(request)
         logger.error(traceback.format_exc())
         return redirect('login')
 
@@ -513,32 +514,45 @@ def create_device(request, struserid):
 # 引　数：リクエスト　ユーザーID　機器ID
 # 戻り値：なし
 
+# =========================================================
+# 機器編集画面（edit_device）
+# =========================================================
 def edit_device(request, struserid, strdevid):
     try:
+        # --- ログインユーザー確認 ---
         objuser = UserMst.objects.filter(id=struserid).first()
         if not objuser:
             request.session.flush()
             return redirect('login')
 
+        # --- 顧客一覧と対象機器 ---
         customers = UserMst.objects.filter(usrKind=1, usrDelete=False)
         device = DeviceMst.objects.get(id=strdevid, dvcDeleteFlag=False)
 
-        # セッションの一時ソフト
+        # --- 一時セッション内ソフト情報 ---
         temp_softs = request.session.get('temp_softs', [])
-        # 既存ソフト（DB）
         softwares = DeviceSoftMst.objects.filter(dvsDeviceID=device, dvsDeleteFlag=False)
 
-        # 共有パラメータ
+        # 初回表示時、一時データが空なら既存ソフトを反映
+        if not temp_softs and softwares.exists():
+            temp_softs = [
+                {'name': s.dvsSoftName, 'warranty': s.dvsWarranty.strftime('%Y-%m-%d') if s.dvsWarranty else ''}
+                for s in softwares
+            ]
+            request.session['temp_softs'] = temp_softs
+
         params = {
             'User': objuser,
             'struserid': struserid,
             'device': device,
             'customers': customers,
-            'softwares': softwares,
             'temp_softs': temp_softs,
+            'open_modal': False,  # 初回ではモーダル開かない
         }
 
-        # --- GET: DB値で初期表示 ---
+        # =====================================================
+        # GET（初回表示）
+        # =====================================================
         if request.method == 'GET':
             form = DeviceForm(initial={
                 'chrDeviceName': device.dvcName,
@@ -564,68 +578,52 @@ def edit_device(request, struserid, strdevid):
             params['Form'] = form
             return render(request, 'edit_device.html', params)
 
-        # --- POST: ここで必ず一度フォームをバインドしておく（入力保持のため） ---
+        # =====================================================
+        # POST共通
+        # =====================================================
         form = DeviceForm(request.POST)
-        params['Form'] = form  # 以降、どの分岐でもこの form を返せば入力値は消えない
+        params['Form'] = form
 
-        # ===== 一時ソフト 追加 =====
+        # ===== ソフト追加 =====
         if 'btnAddSoftTemp' in request.POST:
             name = request.POST.get('chrSoftName', '').strip()
             warranty = request.POST.get('chrWarranty', '').strip()
             if name and warranty:
                 temp_softs.append({'name': name, 'warranty': warranty})
                 request.session['temp_softs'] = temp_softs
-                messages.success(request, f"ソフト '{name}' を一時追加しました")
+                messages.success(request, f"ソフト '{name}' を追加しました。")
             else:
-                messages.error(request, "ソフト名と保証期限を入力してください")
+                messages.error(request, "ソフト名と保証期限を入力してください。")
 
             params['temp_softs'] = temp_softs
+            params['open_modal'] = True
             return render(request, 'edit_device.html', params)
 
-        # ===== 一時ソフト 編集 =====
+        # ===== ソフト更新 =====
         if 'btnUpdateSoftTemp' in request.POST:
-            try:
-                index = int(request.POST.get('soft_index'))
-            except (TypeError, ValueError):
-                index = -1
-
+            index = int(request.POST.get('soft_index', -1))
             new_name = request.POST.get('chrSoftName', '').strip()
             new_warranty = request.POST.get('chrWarranty', '').strip()
-
             if 0 <= index < len(temp_softs):
-                if new_name and new_warranty:
-                    temp_softs[index]['name'] = new_name
-                    temp_softs[index]['warranty'] = new_warranty
-                    request.session['temp_softs'] = temp_softs
-                    messages.success(request, "一時ソフトを更新しました")
-                else:
-                    messages.error(request, "ソフト名と保証期限を入力してください")
-            else:
-                messages.error(request, "更新対象のソフトが見つかりません")
-
-            params['temp_softs'] = temp_softs
+                temp_softs[index]['name'] = new_name
+                temp_softs[index]['warranty'] = new_warranty
+                request.session['temp_softs'] = temp_softs
+                messages.success(request, "ソフト情報を更新しました。")
+            params['open_modal'] = True
             return render(request, 'edit_device.html', params)
 
-        # ===== 一時ソフト 削除 =====
+        # ===== ソフト削除 =====
         if 'btnDeleteSoftTemp' in request.POST:
-            try:
-                index = int(request.POST.get('soft_index'))
-            except (TypeError, ValueError):
-                index = -1
-
+            index = int(request.POST.get('soft_index', -1))
             if 0 <= index < len(temp_softs):
                 deleted = temp_softs.pop(index)
                 request.session['temp_softs'] = temp_softs
-                messages.success(request, f"一時ソフト '{deleted['name']}' を削除しました")
-            else:
-                messages.error(request, "削除対象のソフトが見つかりません")
-
-            params['temp_softs'] = temp_softs
+                messages.success(request, f"ソフト '{deleted['name']}' を削除しました。")
+            params['open_modal'] = True
             return render(request, 'edit_device.html', params)
 
-        # ===== 最終更新（DB保存） =====
+        # ===== 機器更新 =====
         if 'btnUpdateDevice' in request.POST:
-            # ここだけバリデーションを行う
             if form.is_valid():
                 cd = form.cleaned_data
                 device.dvcName = cd['chrDeviceName']
@@ -647,39 +645,35 @@ def edit_device(request, struserid, strdevid):
                 device.dvcIP = cd['chrDeviceIP']
                 device.dvcNetWork = cd['chrDeviceNetwork']
                 device.dvcNotes = cd['chrNotes']
-                device.dvcCustomer = device.dvcCustomer
                 device.save()
 
-                # 一時ソフトをDBへ反映
+                # ソフト更新（既存削除→新規登録）
+                DeviceSoftMst.objects.filter(dvsDeviceID=device).update(dvsDeleteFlag=True)
                 for soft in temp_softs:
                     DeviceSoftMst.objects.create(
                         dvsDeviceID=device,
                         dvsSoftName=soft['name'],
-                        dvsWarranty=soft['warranty'],
+                        dvsWarranty=soft['warranty'] or None,
                         dvsDeleteFlag=False
                     )
-                # クリア
-                request.session['temp_softs'] = []
 
-                messages.success(request, "機器情報を更新しました")
-                return redirect('edit_device', struserid=struserid, strdevid=device.id)
+                request.session['temp_softs'] = []
+                messages.success(request, "機器情報を更新しました。")
+                return redirect('manage_device', struserid=struserid)
             else:
-                # 何がエラーか見えるようにしておくと便利
-                # messages.error(request, f"入力エラー: {form.errors}")  # 必要なら有効化
-                messages.error(request, "入力エラーがあります")
+                messages.error(request, "入力内容に誤りがあります。")
                 return render(request, 'edit_device.html', params)
 
-        # ===== 戻る / ログアウト =====
+        # ===== 戻る =====
         if 'btnBack' in request.POST:
-            # 入力中の一時ソフトは破棄して戻る場合は下を有効化
-            # request.session['temp_softs'] = []
+            request.session['temp_softs'] = []
             return redirect('manage_device', struserid=struserid)
 
+        # ===== ログアウト =====
         if 'btnLogout' in request.POST:
             request.session.flush()
             return redirect('login')
 
-        # どのボタンでもなければ表示
         return render(request, 'edit_device.html', params)
 
     except Exception:

@@ -60,7 +60,7 @@
           <tr id="row-{{ user.id }}">
             <td class="editable" data-field="usrName">{{ user.usrName }}</td>
             <td class="editable" data-field="usrLoginID">{{ user.usrLoginID }}</td>
-            <td class="editable" data-field="usrPassWord">{{ user.usrPassWord }}</td>
+            <td class="editable" data-field="usrPassWord">****</td>
             <td class="editable" data-field="usrMail">{{ user.usrMail }}</td>
             <td>
               <button type="button" class="btn btn-sm btn-warning edit-btn" data-id="{{ user.id }}">編集</button>
@@ -76,9 +76,12 @@
     </div>
 
     <button class="btn btn-secondary w-100 mb-3" type="submit" name="btnBack" formnovalidate>戻る</button>
+    
     <button class="btn btn-danger w-100" type="submit" name="btnLogout" formnovalidate>ログアウト</button>
   </form>
 </div>
+<br>
+<br>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -182,3 +185,4 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 {% endblock %}
+
