@@ -287,7 +287,7 @@ def manage_device(request, struserid):
         strurl = reverse( 'login' )
         return redirect( strurl )
     
-    return render(request, 'Manage_Device.html', params)            
+    return render(request, 'manage_Device.html', params)            
 
 # 詳細
 # 引　数：リクエスト　ユーザーID　機器ID
