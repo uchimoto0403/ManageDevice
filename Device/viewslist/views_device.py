@@ -514,9 +514,7 @@ def create_device(request, struserid):
 # 引　数：リクエスト　ユーザーID　機器ID
 # 戻り値：なし
 
-# =========================================================
 # 機器編集画面（edit_device）
-# =========================================================
 def edit_device(request, struserid, strdevid):
     try:
         # --- ログインユーザー確認 ---
@@ -549,10 +547,8 @@ def edit_device(request, struserid, strdevid):
             'temp_softs': temp_softs,
             'open_modal': False,  # 初回ではモーダル開かない
         }
-
-        # =====================================================
-        # GET（初回表示）
-        # =====================================================
+      
+        # GET（初回表示）       
         if request.method == 'GET':
             form = DeviceForm(initial={
                 'chrDeviceName': device.dvcName,
@@ -578,9 +574,8 @@ def edit_device(request, struserid, strdevid):
             params['Form'] = form
             return render(request, 'edit_device.html', params)
 
-        # =====================================================
-        # POST共通
-        # =====================================================
+        
+        # POST共通        
         form = DeviceForm(request.POST)
         params['Form'] = form
 

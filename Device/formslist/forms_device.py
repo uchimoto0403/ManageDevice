@@ -21,7 +21,7 @@ class DeviceForm( forms.Form ):
     chrDeviceCustomer = forms.ModelChoiceField(
         label="顧客名",
         queryset=UserMst.objects.filter(usrKind=1, usrDelete=False),
-        required=True,
+        required=False,
         widget=forms.Select(
             attrs={
                 'class': 'form-control',
@@ -30,25 +30,15 @@ class DeviceForm( forms.Form ):
         )
     )
     
-    DEVICE_KIND_CHOICES = [
-        ('', '---選択してください---'),
-        ('desktop', 'デスクトップPC'),
-        ('laptop', 'ノートPC'),
-        ('printer', 'プリンター'),
-        ('server', 'サーバー'),
-        ('network', 'ネットワーク機器'),
-    ]
 # 種類
-    chrDeviceKind = forms.ChoiceField(
-        label = '種類',
-        choices=DEVICE_KIND_CHOICES,
-        required=False,
-        widget=forms.Select(
-            attrs={
-                'class': 'form-control',
-                'style': 'width:80%',
-            })
-    )
+    chrDeviceKind = forms.CharField(
+    label = '種類',
+    max_length=30,
+    required=False,
+    widget=forms.TextInput(
+        attrs={'class': 'form-control', 'style': 'width:80%;'}
+        )
+    )   
     
 # メーカー
     chrDeviceMaker = forms.CharField(  

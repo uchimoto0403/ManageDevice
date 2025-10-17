@@ -7,10 +7,7 @@
 <div class="container" style="max-width:1200px;">
   <form id="mainForm" action="{% url 'edit_device' struserid=struserid strdevid=device.id %}" method="post">
     {% csrf_token %}
-
-    <div class="fs-4 text-center mb-4">
-      <h1>機器編集</h1>
-    </div>
+    <h1 class="fs-4 text-center mb-4">機器編集</h1>
 
     {% if messages %}
       {% for message in messages %}
@@ -18,14 +15,14 @@
       {% endfor %}
     {% endif %}
 
-    <!-- 各入力フォーム（createと同等） -->
+    <!-- 各入力フォーム -->
     <div class="row mb-3">
       <label class="col-2 text-end">機器名：</label>
       <div class="col-4"><input type="text" name="chrDeviceName" class="form-control"
-               value="{{ temp_device.chrDeviceName|default:device.dvcName }}"></div>
+               value="{{ device.dvcName }}"></div>
       <label class="col-2 text-end">使用可否：</label>
       <div class="col-4"><input type="text" name="chrDeviceStatus" class="form-control"
-               value="{{ temp_device.chrDeviceStatus|default:device.dvcStatus }}"></div>
+               value="{{ device.dvcStatus }}"></div>
     </div>
 
     <div class="row mb-3">
@@ -36,76 +33,76 @@
       </div>
       <label class="col-2 text-end">シリアル番号：</label>
       <div class="col-4"><input type="text" name="chrDeviceSerialNumber" class="form-control"
-               value="{{ temp_device.chrDeviceSerialNumber|default:device.dvcSerialnumber }}"></div>
+               value="{{ device.dvcSerialnumber }}"></div>
     </div>
 
     <div class="row mb-3">
       <label class="col-2 text-end">媒体：</label>
       <div class="col-4"><input type="text" name="chrDeviceKind" class="form-control"
-               value="{{ temp_device.chrDeviceKind|default:device.dvcKind }}"></div>
+               value="{{ device.dvcKind }}"></div>
       <label class="col-2 text-end">OS：</label>
       <div class="col-4"><input type="text" name="chrDeviceOS" class="form-control"
-               value="{{ temp_device.chrDeviceOS|default:device.dvcOS }}"></div>
+               value="{{ device.dvcOS }}"></div>
     </div>
 
     <div class="row mb-3">
       <label class="col-2 text-end">メーカー：</label>
       <div class="col-4"><input type="text" name="chrDeviceMaker" class="form-control"
-               value="{{ temp_device.chrDeviceMaker|default:device.dvcMaker }}"></div>
+               value="{{ device.dvcMaker }}"></div>
       <label class="col-2 text-end">CPU：</label>
       <div class="col-4"><input type="text" name="chrDeviceCPU" class="form-control"
-               value="{{ temp_device.chrDeviceCPU|default:device.dvcCPU }}"></div>
+               value="{{ device.dvcCPU }}"></div>
     </div>
 
     <div class="row mb-3">
       <label class="col-2 text-end">型番：</label>
       <div class="col-4"><input type="text" name="chrDeviceModel" class="form-control"
-               value="{{ temp_device.chrDeviceModel|default:device.dvcModel }}"></div>
+               value="{{ device.dvcModel }}"></div>
       <label class="col-2 text-end">RAM：</label>
       <div class="col-4"><input type="text" name="chrDeviceRAM" class="form-control"
-               value="{{ temp_device.chrDeviceRAM|default:device.dvcRAM }}"></div>
+               value="{{ device.dvcRAM }}"></div>
     </div>
 
     <div class="row mb-3">
       <label class="col-2 text-end">購入日：</label>
       <div class="col-4"><input type="date" name="dtDevicePurchase" class="form-control"
-               value="{{ temp_device.dtDevicePurchase|default:device.dvcPurchase|date:'Y-m-d' }}"></div>
+               value="{{ device.dvcPurchase|date:'Y-m-d' }}"></div>
       <label class="col-2 text-end">グラフィックカード：</label>
       <div class="col-4"><input type="text" name="chrDeviceGraphic" class="form-control"
-               value="{{ temp_device.chrDeviceGraphic|default:device.dvcGraphic }}"></div>
+               value="{{ device.dvcGraphic }}"></div>
     </div>
 
     <div class="row mb-3">
       <label class="col-2 text-end">保証期限：</label>
       <div class="col-4"><input type="date" name="dtDeviceWarranty" class="form-control"
-               value="{{ temp_device.dtDeviceWarranty|default:device.dvcWarranty|date:'Y-m-d' }}"></div>
+               value="{{ device.dvcWarranty|date:'Y-m-d' }}"></div>
       <label class="col-2 text-end">ストレージ：</label>
       <div class="col-4"><input type="text" name="chrDeviceStorage" class="form-control"
-               value="{{ temp_device.chrDeviceStorage|default:device.dvcStorage }}"></div>
+               value="{{ device.dvcStorage }}"></div>
     </div>
 
     <div class="row mb-3">
       <label class="col-2 text-end">使用者：</label>
       <div class="col-4"><input type="text" name="chrDeviceUser" class="form-control"
-               value="{{ temp_device.chrDeviceUser|default:device.dvcUser }}"></div>
+               value="{{ device.dvcUser }}"></div>
       <label class="col-2 text-end">IPアドレス：</label>
       <div class="col-4"><input type="text" name="chrDeviceIP" class="form-control"
-               value="{{ temp_device.chrDeviceIP|default:device.dvcIP }}"></div>
+               value="{{ device.dvcIP }}"></div>
     </div>
 
     <div class="row mb-3">
       <label class="col-2 text-end">設置場所：</label>
       <div class="col-4"><input type="text" name="chrDevicePlace" class="form-control"
-               value="{{ temp_device.chrDevicePlace|default:device.dvcPlace }}"></div>
+               value="{{ device.dvcPlace }}"></div>
       <label class="col-2 text-end">ネットワーク：</label>
       <div class="col-4"><input type="text" name="chrDeviceNetwork" class="form-control"
-               value="{{ temp_device.chrDeviceNetwork|default:device.dvcNetWork }}"></div>
+               value="{{ device.dvcNetWork }}"></div>
     </div>
 
     <div class="row mb-3">
       <label class="col-2 text-end">資産番号：</label>
       <div class="col-4"><input type="text" name="chrDeviceAssetNumber" class="form-control"
-               value="{{ temp_device.chrDeviceAssetNumber|default:device.dvcAssetnumber }}"></div>
+               value="{{ device.dvcAssetnumber }}"></div>
       <label class="col-2 text-end">ソフト登録：</label>
       <div class="col-4">
         <button type="button" class="btn btn-info btn-sm w-100"
@@ -115,10 +112,10 @@
 
     <div class="row mb-4">
       <label class="col-2 text-end">備考：</label>
-      <div class="col-10"><textarea name="chrNotes" class="form-control">{{ temp_device.chrNotes|default:device.dvcNotes }}</textarea></div>
+      <div class="col-10"><textarea name="chrNotes" class="form-control">{{ device.dvcNotes }}</textarea></div>
     </div>
 
-    <!-- 下部ボタン -->
+    <!-- ボタン -->
     <div class="d-flex flex-column align-items-center gap-3 mb-5" style="max-width: 250px; margin: 0 auto;">
       <button class="btn btn-primary w-100" type="submit" name="btnUpdateDevice">更新</button>
       <button class="btn btn-secondary w-100" type="submit" name="btnBack" formnovalidate>戻る</button>
@@ -136,14 +133,14 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
       </div>
       <div class="modal-body">
-        {% if temp_softs %}
-          <table class="table table-bordered text-center">
-            <thead><tr><th>ソフト名</th><th>保証期限</th><th>操作</th></tr></thead>
-            <tbody>
-              {% for soft in temp_softs %}
-              <tr>
-                <form method="post" action="{% url 'edit_device' struserid=struserid strdevid=device.id %}" class="softForm">
-                  {% csrf_token %}
+        <form method="post" action="{% url 'edit_device' struserid=struserid strdevid=device.id %}" class="softForm">
+          {% csrf_token %}
+          {% if temp_softs %}
+            <table class="table table-bordered text-center">
+              <thead><tr><th>ソフト名</th><th>保証期限</th><th>操作</th></tr></thead>
+              <tbody>
+                {% for soft in temp_softs %}
+                <tr>
                   <td><input type="text" name="chrSoftName" value="{{ soft.name }}" class="form-control"></td>
                   <td><input type="date" name="chrWarranty" value="{{ soft.warranty }}" class="form-control"></td>
                   <td>
@@ -151,29 +148,18 @@
                     <button type="submit" name="btnUpdateSoftTemp" class="btn btn-success btn-sm w-100 mb-1">保存</button>
                     <button type="submit" name="btnDeleteSoftTemp" class="btn btn-danger btn-sm w-100">削除</button>
                   </td>
-                </form>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        {% else %}
-          <p class="text-muted text-center">登録されたソフトはありません。</p>
-        {% endif %}
-
-        <hr>
-        <!-- 新規追加 -->
-        <form method="post" action="{% url 'edit_device' struserid=struserid strdevid=device.id %}" class="softForm">
-          {% csrf_token %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p class="text-muted text-center">登録されたソフトはありません。</p>
+          {% endif %}
+          <hr>
           <div class="row mb-3">
-            <div class="col-5">
-              <input type="text" name="chrSoftName" class="form-control" placeholder="ソフト名">
-            </div>
-            <div class="col-5">
-              <input type="date" name="chrWarranty" class="form-control">
-            </div>
-            <div class="col-2">
-              <button type="submit" name="btnAddSoftTemp" class="btn btn-primary w-100">追加</button>
-            </div>
+            <div class="col-5"><input type="text" name="chrSoftName" class="form-control" placeholder="ソフト名"></div>
+            <div class="col-5"><input type="date" name="chrWarranty" class="form-control"></div>
+            <div class="col-2"><button type="submit" name="btnAddSoftTemp" class="btn btn-primary w-100">追加</button></div>
           </div>
         </form>
       </div>
@@ -181,35 +167,13 @@
   </div>
 </div>
 
-<!-- ====================== JS ====================== -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- モーダルフォームにメインフォームの内容をコピー -->
-<script>
-document.querySelectorAll('.softForm').forEach(form => {
-  form.addEventListener('submit', function() {
-    const mainForm = document.querySelector('#mainForm');
-    const inputs = mainForm.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-      if (!input.name) return;
-      const hidden = document.createElement('input');
-      hidden.type = 'hidden';
-      hidden.name = input.name;
-      hidden.value = input.value;
-      this.appendChild(hidden);
-    });
-  });
-});
-</script>
-
-<!-- モーダルを自動表示（ソフト登録ボタン後など） -->
 {% if open_modal %}
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    var myModal = new bootstrap.Modal(document.getElementById('softwareModal'));
-    myModal.show();
-  });
+document.addEventListener("DOMContentLoaded", function() {
+  var myModal = new bootstrap.Modal(document.getElementById('softwareModal'));
+  myModal.show();
+});
 </script>
 {% endif %}
-
 {% endblock %}
